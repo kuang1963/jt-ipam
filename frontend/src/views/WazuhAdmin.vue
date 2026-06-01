@@ -18,6 +18,7 @@ import {
 } from "@/api/integrations";
 import { autoSort } from "@/composables/useTableSort";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -256,6 +257,7 @@ onMounted(() => { void refresh(); });
           </n-button>
           <ColumnPicker :all="wzInstPicker" :visible="wzInst.visibleKeys.value"
                         @update:visible="wzInst.setVisible" @reset="wzInst.reset" />
+          <ExportButton :columns="instCols" :rows="insts" filename="wazuh-instances" :title="t('wazuh_admin.title')" />
         </n-space>
         <n-data-table :columns="instCols" :data="insts" :loading="loading" :bordered="false" :scroll-x="1006" />
       </n-tab-pane>
@@ -266,6 +268,7 @@ onMounted(() => { void refresh(); });
         <n-space style="margin-bottom: 8px">
           <ColumnPicker :all="wzAgPicker" :visible="wzAg.visibleKeys.value"
                         @update:visible="wzAg.setVisible" @reset="wzAg.reset" />
+          <ExportButton :columns="agentCols" :rows="agents" filename="wazuh-agents" :title="t('wazuh_admin.agents_count')" />
         </n-space>
         <n-data-table :columns="agentCols" :data="agents" :loading="loading" :bordered="false" :scroll-x="960" />
       </n-tab-pane>
@@ -280,6 +283,7 @@ onMounted(() => { void refresh(); });
         <n-space style="margin-bottom: 8px">
           <ColumnPicker :all="wzMissPicker" :visible="wzMiss.visibleKeys.value"
                         @update:visible="wzMiss.setVisible" @reset="wzMiss.reset" />
+          <ExportButton :columns="missCols" :rows="missing" filename="wazuh-missing-agents" :title="t('wazuh_admin.missing_agents')" />
         </n-space>
         <n-data-table :columns="missCols" :data="missing" :loading="loading" :bordered="false" :scroll-x="402" />
       </n-tab-pane>

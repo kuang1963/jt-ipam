@@ -19,6 +19,7 @@ import {
 import { listSubnets } from "@/api/subnets";
 import { autoSort } from "@/composables/useTableSort";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -200,6 +201,7 @@ onMounted(() => { void refresh(); });
       </n-button>
       <ColumnPicker :all="saPicker" :visible="saVis"
                     @update:visible="saSet" @reset="saReset" />
+      <ExportButton :columns="cols" :rows="rows" filename="scan-agents" :title="t('nav.scan_agents')" />
     </n-space>
     <n-data-table :columns="cols" :data="rows" :loading="loading" :bordered="false" :scroll-x="1046" />
 

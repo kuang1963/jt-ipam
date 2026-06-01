@@ -166,6 +166,11 @@ td.col-actions .n-space { flex-wrap: nowrap !important; }
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.7); background-clip: content-box; }
 
+/* 表格欄位標題一律不換行：短的 CJK 標題（如「子網路」）碰到 sorter 箭頭預留的
+   空間時不會被擠成兩行；欄位放得下會自動撐寬（表格都有 scroll-x）。
+   只影響標題，資料 cell 仍照各欄 ellipsis 設定截斷。 */
+.n-data-table-th__title { white-space: nowrap; }
+
 /* 卡片標頭 extra 區（明細頁的 重新整理 / 欄位 等）按鈕一律 medium 高度，
    避免 popover-trigger 與一般按鈕視覺上一高一矮 */
 .n-card-header__extra .n-button:not(.n-button--small-type) {

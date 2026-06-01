@@ -28,6 +28,10 @@ import httpx
 
 router = APIRouter(prefix="/system", tags=["system"], dependencies=[Depends(require_admin)])
 
+# 不需 admin 的系統讀取路由（例如 Locations 地圖預覽要讀全域 map_provider）。
+# 寫入（PUT）仍掛在上面的 admin 路由，只有 admin 能改。
+public_router = APIRouter(prefix="/system", tags=["system"])
+
 
 class HostnamePrecedenceOut(StrictModel):
     order: list[str]
@@ -169,7 +173,7 @@ class MapProviderOut(StrictModel):
     provider: str   # "osm" | "google"
 
 
-@router.get("/map-provider", response_model=MapProviderOut)
+@public_router.get("/map-provider", response_model=MapProviderOut)
 async def get_map_provider(
     _user: CurrentUser,
     session: Annotated[AsyncSession, Depends(get_session)],

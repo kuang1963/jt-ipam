@@ -3,12 +3,12 @@ import { computed, h, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   NCard, NDataTable, NSpace, NIcon, NButton, NModal, NForm, NFormItem,
-  NInput, NPopconfirm, NSelect, NInputNumber, NTooltip,
+  NInput, NPopconfirm, NInputNumber, NTooltip,
   useMessage, type DataTableColumns, type DataTableRowKey,
 } from "naive-ui";
 import {
   listLocations, createLocation, updateLocation, deleteLocation, bulkDeleteLocations,
-  getMapProvider, setMapProvider, type Location,
+  getMapProvider, type Location,
 } from "@/api/basic";
 import {
   LocationsIcon, PlusIcon, EditIcon, DeleteIcon, RefreshIcon, SaveIcon, CancelIcon,
@@ -30,16 +30,8 @@ const form = ref({
 const checkedKeys = ref<DataTableRowKey[]>([]);
 const bulkBusy = ref(false);
 
-// 地圖供應商（系統設定，預設 osm）
+// 地圖供應商：全域系統設定（在「設定 → 系統」由 admin 調整），這裡唯讀套用於地圖預覽
 const mapProvider = ref<"osm" | "google">("osm");
-async function changeMapProvider(p: "osm" | "google") {
-  mapProvider.value = p;
-  try { await setMapProvider(p); msg.success(t("common.ok")); } catch { /* silent */ }
-}
-const mapProviderOpts = [
-  { label: "OpenStreetMap", value: "osm" },
-  { label: "Google Maps", value: "google" },
-];
 const mapSrc = computed(() => {
   const lat = form.value.latitude, lon = form.value.longitude;
   if (lat == null || lon == null) return "";
@@ -169,11 +161,6 @@ onMounted(() => { void refresh(); getMapProvider().then((p) => { mapProvider.val
       <ColumnPicker :all="columnPickerItems" :visible="visibleKeys"
                     @update:visible="setVisible" @reset="reset" />
       <ExportButton :columns="cols" :rows="rows" filename="locations" :title="t('nav.locations')" />
-      <n-space align="center" :size="6" style="margin-left: auto">
-        <span style="font-size: 13px; opacity: .7">{{ t("locations.map") }}</span>
-        <n-select :value="mapProvider" :options="mapProviderOpts" size="small"
-                  style="width: 160px" @update:value="changeMapProvider" />
-      </n-space>
     </n-space>
     <n-space v-if="checkedKeys.length" align="center" style="margin-bottom: 8px; padding: 8px 12px; background: rgba(127,127,127,0.08); border-radius: 6px;">
       <span>{{ t("common.selected_n", { n: checkedKeys.length }) }}</span>

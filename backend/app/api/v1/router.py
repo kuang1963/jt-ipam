@@ -92,6 +92,7 @@ api_v1_router.include_router(users.router)
 api_v1_router.include_router(bg_tasks_endpoint.router)
 api_v1_router.include_router(adguard.router)
 api_v1_router.include_router(system_settings_ep.router)
+api_v1_router.include_router(system_settings_ep.public_router)
 
 # Phase 3 [DONE] Tenancy/Contacts/ASN/Circuits/Wireless、Virtualization/Proxmox、
 #           Cabling/Power/VPN、Topology、OIDC SSO（SAML stub）

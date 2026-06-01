@@ -26,7 +26,8 @@ import {
   useMessage,
 } from "naive-ui";
 import { NIcon } from "naive-ui";
-import { SettingsIcon, UsersIcon, LockIcon } from "@/icons";
+import { SettingsIcon, UsersIcon, LockIcon, LocationsIcon } from "@/icons";
+import { getMapProvider, setMapProvider } from "@/api/basic";
 import QRCode from "qrcode";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/auth";
@@ -76,6 +77,22 @@ async function patchPref<K extends keyof UserPreferences>(
     prefs.value = updated;
     if (key === "locale") ui.setLocale(value as "zh-TW" | "en-US");
     if (key === "theme") ui.setTheme(value as "light" | "dark" | "auto");
+  } catch {
+    msg.error(t("errors.network"));
+  }
+}
+
+// ── System（admin only）：全域地圖供應商 ──
+const mapProvider = ref<"osm" | "google">("osm");
+const mapProviderOpts = [
+  { label: "OpenStreetMap", value: "osm" },
+  { label: "Google Maps", value: "google" },
+];
+async function changeMapProvider(p: "osm" | "google") {
+  mapProvider.value = p;
+  try {
+    await setMapProvider(p);
+    msg.success(t("common.ok"));
   } catch {
     msg.error(t("errors.network"));
   }
@@ -159,7 +176,12 @@ const calendarOptions = computed(() => [
 // (Phase 1.5 在 /me 增加 totp_enabled 欄位)
 const totpStateUnknown = ref(true);
 
-onMounted(() => { void loadPrefs(); });
+onMounted(() => {
+  void loadPrefs();
+  if (me.value?.is_admin) {
+    getMapProvider().then((p) => { mapProvider.value = p; }).catch(() => {});
+  }
+});
 </script>
 
 <template>
@@ -314,6 +336,26 @@ onMounted(() => { void loadPrefs(); });
           </div>
         </n-space>
         <p v-else style="opacity: 0.7">{{ t("common.loading") }}</p>
+      </n-tab-pane>
+
+      <!-- System (admin only)：全域系統設定 -->
+      <n-tab-pane v-if="me?.is_admin" name="system">
+        <template #tab>
+          <span style="display:inline-flex;align-items:center;gap:6px"><n-icon :size="16"><LocationsIcon /></n-icon>{{ t('settings.system.tab') }}</span>
+        </template>
+        <n-space vertical :size="16" style="max-width: 480px">
+          <div>
+            <label>{{ t("settings.system.map_provider") }}</label>
+            <n-select
+              :value="mapProvider"
+              :options="mapProviderOpts"
+              @update:value="changeMapProvider"
+            />
+            <div style="font-size: 11px; opacity: 0.65; margin-top: 4px;">
+              {{ t("settings.system.map_provider_hint") }}
+            </div>
+          </div>
+        </n-space>
       </n-tab-pane>
 
       <!-- LLM (admin only) -->

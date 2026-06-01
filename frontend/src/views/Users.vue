@@ -29,6 +29,7 @@ import {
 } from "@/icons";
 import { autoSort } from "@/composables/useTableSort";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -279,6 +280,7 @@ onMounted(() => { void refresh(); });
       </n-button>
       <ColumnPicker :all="usrPicker" :visible="usrVis"
                     @update:visible="usrSet" @reset="usrReset" />
+      <ExportButton :columns="columns" :rows="rows" filename="users" :title="t('users.title')" />
       <span style="opacity: 0.6">total: {{ total }}</span>
     </n-space>
 

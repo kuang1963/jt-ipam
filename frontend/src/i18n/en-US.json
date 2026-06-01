@@ -1232,6 +1232,11 @@
       "theme_auto": "Auto",
       "calendar_gregorian": "Gregorian",
       "calendar_minguo": "Minguo (ROC)"
+    },
+    "system": {
+      "tab": "System",
+      "map_provider": "Map provider",
+      "map_provider_hint": "Global setting: which service the Locations map preview uses. OpenStreetMap needs no API key; Google Maps has better coverage in some regions."
     }
   },
   "errors": {

@@ -15,6 +15,7 @@ import {
 } from "@/icons";
 import { autoSort } from "@/composables/useTableSort";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -188,6 +189,7 @@ onMounted(() => { void refresh(); });
       </n-button>
       <ColumnPicker :all="dnsPicker" :visible="dnsVis"
                     @update:visible="dnsSet" @reset="dnsReset" />
+      <ExportButton :columns="cols" :rows="rows" filename="dns-servers" :title="t('dns_admin.title')" />
     </n-space>
 
     <n-data-table :columns="cols" :data="rows" :loading="loading" :bordered="false" :scroll-x="766">

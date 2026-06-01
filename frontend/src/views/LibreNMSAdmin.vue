@@ -19,6 +19,7 @@ import { Link as LinkDevicesIcon } from "@iconoir/vue";
 import { autoSort } from "@/composables/useTableSort";
 import { listSubnets } from "@/api/subnets";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -215,6 +216,7 @@ onMounted(() => { void refresh(); void loadSubnetOptions(); });
       </n-button>
       <ColumnPicker :all="lnPicker" :visible="lnVis"
                     @update:visible="lnSet" @reset="lnReset" />
+      <ExportButton :columns="cols" :rows="rows" filename="librenms" :title="t('librenms_admin.title')" />
     </n-space>
 
     <n-data-table :columns="cols" :data="rows" :loading="loading" :bordered="false" :scroll-x="1116">

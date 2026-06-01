@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.30] — 2026-06-01
+
+### Added
+- Table export (CSV / Markdown / PDF / ODS / ODT) on the admin tables: Users,
+  Audit, DNS, LibreNMS, Wazuh (instances/agents/missing), Firewall
+  (firewalls/mappings/rules), and Scan Agents.
+
+### Changed
+- The global **map provider** selector moved from the Locations page to
+  **Settings → System** (admin-only). A non-admin `GET /system/map-provider`
+  endpoint now lets the Locations map preview render for all users while the
+  `PUT` stays admin-gated.
+
+### Fixed
+- Data-table column headers no longer wrap: a global rule keeps short CJK titles
+  (e.g. 子網路) on one line regardless of the sort-arrow spacing.
+
 ## [0.4.x] — 2026-05/06
 
 ### Added

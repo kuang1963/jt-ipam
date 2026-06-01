@@ -19,6 +19,7 @@ import { listAudit, verifyAuditChain, type AuditLog } from "@/api/admin";
 import { AuditIcon, RefreshIcon, AdminIcon as VerifyIcon } from "@/icons";
 import { autoSort } from "@/composables/useTableSort";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 import { useRouter } from "vue-router";
 const { t } = useI18n();
@@ -220,6 +221,7 @@ onMounted(() => { void refresh(); });
       </n-button>
       <ColumnPicker :all="auditPickerItems" :visible="auditVis"
                     @update:visible="auditSet" @reset="auditReset" />
+      <ExportButton :columns="columns" :rows="rows" filename="audit" :title="t('audit.title')" />
       <span style="opacity: 0.6">total: {{ total }}</span>
     </n-space>
     <n-data-table

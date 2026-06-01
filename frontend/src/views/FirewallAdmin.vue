@@ -20,6 +20,7 @@ import {
   type OPNsenseFirewall, type OPNsenseAliasMapping,
 } from "@/api/integrations";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
 
@@ -380,6 +381,7 @@ onMounted(() => { void refresh(); });
           </n-button>
           <ColumnPicker :all="fwPicker" :visible="fwPrefs.visibleKeys.value"
                         @update:visible="fwPrefs.setVisible" @reset="fwPrefs.reset" />
+          <ExportButton :columns="fwCols" :rows="fws" filename="firewalls" :title="t('firewall_admin.title')" />
         </n-space>
         <n-data-table :columns="fwCols" :data="fws" :loading="loading" :bordered="false" :scroll-x="986" />
       </n-tab-pane>
@@ -398,6 +400,7 @@ onMounted(() => { void refresh(); });
           </n-button>
           <ColumnPicker :all="mapPicker" :visible="mapPrefs.visibleKeys.value"
                         @update:visible="mapPrefs.setVisible" @reset="mapPrefs.reset" />
+          <ExportButton :columns="mapCols" :rows="mappings" filename="firewall-alias-mappings" :title="t('firewall_admin.alias_mappings')" />
         </n-space>
         <n-data-table :columns="mapCols" :data="mappings" :loading="loading" :bordered="false" :scroll-x="946" />
       </n-tab-pane>
@@ -425,6 +428,7 @@ onMounted(() => { void refresh(); });
           </span>
           <ColumnPicker :all="rulePicker" :visible="rulePrefs.visibleKeys.value"
                         @update:visible="rulePrefs.setVisible" @reset="rulePrefs.reset" />
+          <ExportButton :columns="ruleCols" :rows="rules" filename="firewall-rules" :title="t('firewall_admin.rules')" />
         </n-space>
         <n-data-table
           v-if="rulesFw"
