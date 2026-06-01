@@ -4,6 +4,54 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [Unreleased]
+
+### Added
+- Device ↔ IP linking: the device list resolves an effective management IP
+  (primary_ip → LibreNMS mgmt IP → name-is-IP), renders it as a clickable link
+  when a matching address object exists, and offers a one-click "link" button
+  when a same-IP address object exists but isn't yet attached to the device.
+  The IP-address editor can pick its device, and `/devices/{id}/relations`
+  exposes the relation chain.
+- Scan-agent auto-discovery: an agent push for an unknown IP inside one of its
+  assigned, scan-enabled subnets auto-creates the address object (with its own
+  descriptive note, not copied from phpIPAM); overlapping ranges are matched by
+  longest-prefix within the agent's own subnets only.
+- Per-source precedence is now split into independent cards: hostname,
+  device-name, ARP/MAC, and a new **device model** precedence (manual is highest
+  and cannot be disabled in each).
+- Address search gains an **exact-match** toggle (IP / hostname must equal the
+  query, so `192.168.1.1` no longer also matches `192.168.1.1xx`).
+- Subnets may explicitly **allow overlap** (e.g. same CIDR under a different
+  tenant / location) via `allow_overlap`.
+- OPNsense alias sync: aliases are pulled into `opnsense_synced_aliases`.
+- Dashboard: pinned locations / pinned racks cards; rack page can pick a device
+  into an empty U-slot via a mini-rack picker.
+- GitHub Pages site: project logo + favicon, inline SVG icons (no emoji),
+  corrected positioning (not "built on phpIPAM").
+
+### Changed
+- Device naming from LibreNMS now prefers **sysName** over hostname (which is
+  often just an IP); device-name precedence default reordered accordingly, and
+  model is backfilled from LibreNMS hardware.
+- DNS sync applies one deterministic hostname per IP (sorted), fixing name
+  flapping when an IP has multiple A records.
+- Hostname precedence now includes the Wazuh and AdGuard sources in the order
+  list (they were observed but missing from the precedence UI).
+
+### Fixed
+- Subnet-pin persistence survived a refresh inconsistently — pins now persist
+  synchronously on toggle instead of via a component-scoped watcher.
+- GeoIP database download switched to the legacy `geoip_download` endpoint
+  (the new permalink 302'd to S3 and rejected the forwarded auth header).
+- Floor-plan upload 500 (uploads dir ownership); audit_logs doc table row
+  broken by unescaped SQL `||` operators.
+
+### Tests
+- Added regression coverage: model precedence, subnet overlap, exact IP search,
+  scan auto-discovery, hostname-source clearing, hostname-order completeness,
+  and device IP-matching flags.
+
 ## [0.4.31] — 2026-06-01
 
 ### Added
