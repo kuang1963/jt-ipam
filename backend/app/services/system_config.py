@@ -9,6 +9,7 @@ DB 有設就用 DB，否則用 env。
 from __future__ import annotations
 
 import time
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
@@ -81,7 +82,7 @@ async def set_llm_config(
     embedding_model: str | None = None,
     chat_model: str | None = None,
     timeout: float | None = None,
-    updated_by_user_id=None,  # type: ignore[no-untyped-def]
+    updated_by_user_id: uuid.UUID | None = None,
 ) -> dict[str, Any]:
     row = await session.get(SystemSetting, LLM_KEY)
     if row is None:
@@ -119,7 +120,7 @@ async def get_ai_chat_retention_days(session: AsyncSession) -> int:
 
 
 async def set_ai_chat_retention_days(
-    session: AsyncSession, *, days: int, updated_by_user_id=None,  # type: ignore[no-untyped-def]
+    session: AsyncSession, *, days: int, updated_by_user_id: uuid.UUID | None = None,
 ) -> int:
     days = max(0, int(days))
     row = await session.get(SystemSetting, AI_CHAT_KEY)

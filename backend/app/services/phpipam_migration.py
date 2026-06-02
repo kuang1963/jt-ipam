@@ -244,7 +244,7 @@ async def _sync_sections(
                         legacy_to_uuid[legacy_id] = mapping.jt_ipam_id
                         continue
                     # overwrite
-                    obj = await session.get(Section, mapping.jt_ipam_id)
+                    obj = await session.get(Section, mapping.jt_ipam_id)  # type: ignore[assignment]
                     if obj is None:
                         res.errored += 1
                         res.errors.append(
@@ -292,8 +292,8 @@ async def _sync_simple(
     rows: list[dict[str, Any]],
     on_conflict: str,
     dry_run: bool,
-    build_new,             # type: ignore[no-untyped-def]
-    apply_update,          # type: ignore[no-untyped-def]
+    build_new: Any,
+    apply_update: Any,
     model_cls: type,
 ) -> TableResult:
     """通用簡單表的同步：build_new(row) 建新物件，apply_update(obj, row) 更新欄位。
@@ -591,7 +591,7 @@ async def _sync_subnets(
                         await _touch_seen(session, object_type="subnet", legacy_id=legacy_id)
                         legacy_to_uuid[legacy_id] = mapping.jt_ipam_id
                         continue
-                    obj = await session.get(Subnet, mapping.jt_ipam_id)
+                    obj = await session.get(Subnet, mapping.jt_ipam_id)  # type: ignore[assignment]
                     if obj is None:
                         res.errored += 1
                         res.errors.append(f"subnet legacy_id={legacy_id} mapping orphaned")
@@ -716,7 +716,7 @@ async def _sync_addresses(
                         res.skipped += 1
                         await _touch_seen(session, object_type="ip", legacy_id=legacy_id)
                         continue
-                    obj = await session.get(IPAddress, mapping.jt_ipam_id)
+                    obj = await session.get(IPAddress, mapping.jt_ipam_id)  # type: ignore[assignment]
                     if obj is None:
                         res.errored += 1
                         continue

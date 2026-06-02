@@ -56,7 +56,7 @@ class UniventionUCSAdapter(DNSAdapter):
             raise DNSAdapterError("UCS UDM REST 401 — 帳號/密碼或權限不足")
         if resp.status_code != 200:
             raise DNSAdapterError(f"UCS UDM REST {resp.status_code}: {resp.text[:200]}")
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     @staticmethod
     def _objects(data: dict) -> list[dict]:  # type: ignore[type-arg]

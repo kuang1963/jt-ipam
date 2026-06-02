@@ -24,6 +24,7 @@ from app.core.audit import append_audit
 from app.core.db import get_session
 from app.models.section import Section
 from app.models.subnet import Subnet
+from app.models.user import User
 from app.services.permission import filter_visible
 
 router = APIRouter()
@@ -48,8 +49,8 @@ def _bool(v: Any) -> bool:
 @router.get("/{app_id}/sections/")
 async def list_sections(
     app_id: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     rows = list((await session.execute(select(Section).order_by(Section.display_order))).scalars().all())
@@ -67,8 +68,8 @@ async def list_sections(
 async def get_section(
     app_id: str,
     ident: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     section: Section | None = None
@@ -97,8 +98,8 @@ async def get_section(
 async def list_section_subnets(
     app_id: str,
     ident: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     try:
@@ -124,8 +125,8 @@ async def create_section(
     app_id: str,
     request: Request,
     payload: Annotated[dict[str, Any], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     _require_admin(user)
@@ -182,8 +183,8 @@ async def update_section(
     ident: str,
     request: Request,
     payload: Annotated[dict[str, Any], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     _require_admin(user)
@@ -229,8 +230,8 @@ async def delete_section(
     app_id: str,
     ident: str,
     request: Request,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     _require_admin(user)

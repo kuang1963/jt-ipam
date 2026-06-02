@@ -220,7 +220,7 @@ async def build_auth_url(request: Any, *, return_to: str | None = None) -> str:
 
     settings_dict = await build_settings()
     auth = OneLogin_Saml2_Auth(_request_dict_from_starlette(request), settings_dict)
-    return auth.login(return_to=return_to or "/")
+    return auth.login(return_to=return_to or "/")  # type: ignore[no-any-return]
 
 
 async def process_acs(request: Any, post_data: dict[str, Any]) -> dict[str, Any]:
@@ -262,7 +262,7 @@ async def metadata_xml() -> str:
         raise SAMLError(f"metadata validation: {errors}")
     if isinstance(metadata, bytes):
         return metadata.decode("utf-8")
-    return metadata
+    return metadata  # type: ignore[no-any-return]
 
 
 async def build_logout_url(request: Any, *, name_id: str | None, session_index: str | None) -> str:
@@ -271,7 +271,7 @@ async def build_logout_url(request: Any, *, name_id: str | None, session_index: 
 
     settings_dict = await build_settings()
     auth = OneLogin_Saml2_Auth(_request_dict_from_starlette(request), settings_dict)
-    return auth.logout(name_id=name_id, session_index=session_index)
+    return auth.logout(name_id=name_id, session_index=session_index)  # type: ignore[no-any-return]
 
 
 # ─────────────────── User mapping ───────────────────

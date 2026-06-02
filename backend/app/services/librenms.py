@@ -36,10 +36,10 @@ from app.services.ip_history import log_change
 LIBRENMS_VLAN_DOMAIN = "LibreNMS"
 
 
-def _scope_uuids(instance: LibreNMSInstance) -> set:
+def _scope_uuids(instance: LibreNMSInstance) -> set[Any]:
     """instance.scope_subnet_ids（JSONB 字串陣列）→ UUID set；空回空 set（不限範圍）。"""
     import uuid as _uuid
-    out: set = set()
+    out: set[Any] = set()
     for s in (instance.scope_subnet_ids or []):
         try:
             out.add(_uuid.UUID(str(s)))
@@ -95,11 +95,11 @@ async def _api_get(instance: LibreNMSInstance, path: str, *, timeout: float = 30
         raise LibreNMSError(f"transport: {exc.__class__.__name__}") from exc
     if resp.status_code != 200:
         raise LibreNMSError(f"LibreNMS {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
-async def _api_post(instance: LibreNMSInstance, path: str, body: dict, *,
-                    timeout: float = 30.0) -> dict[str, Any]:  # type: ignore[type-arg]
+async def _api_post(instance: LibreNMSInstance, path: str, body: dict[str, Any], *,
+                    timeout: float = 30.0) -> dict[str, Any]:
     url = f"{instance.api_url.rstrip('/')}{path}"
     token = _decrypt_token(instance)
     try:
@@ -112,7 +112,7 @@ async def _api_post(instance: LibreNMSInstance, path: str, body: dict, *,
         raise LibreNMSError(f"SSRF guard rejected URL: {exc}") from exc
     if resp.status_code not in (200, 201):
         raise LibreNMSError(f"LibreNMS POST {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 async def healthcheck(instance: LibreNMSInstance) -> dict[str, Any]:
@@ -519,8 +519,8 @@ async def derive_switch_ports(session: AsyncSession, instance: LibreNMSInstance)
     )).all()
     if not rows:
         return 0
-    port_macs: dict[tuple, set] = defaultdict(set)
-    mac_ports: dict[str, list] = defaultdict(list)
+    port_macs: dict[tuple[Any, ...], set[Any]] = defaultdict(set)
+    mac_ports: dict[str, list[Any]] = defaultdict(list)
     for mac, dev_id, port in rows:
         key = (dev_id, port)
         port_macs[key].add(str(mac))
@@ -540,7 +540,7 @@ async def derive_switch_ports(session: AsyncSession, instance: LibreNMSInstance)
             .where(IPAddress.ip.in_(sw_ips), IPAddress.hostname.is_not(None))
         )).all():
             ip_host[str(ipv)] = hn
-    sw_name: dict = {}
+    sw_name: dict[str, Any] = {}
     for sid, h, sn, ip in sw_rows:
         ip_s = str(ip) if ip else None
         name = None

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import ipaddress
 import re
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -121,6 +121,8 @@ async def cidr_info(
 ) -> CIDRInfo:
     net = _net_or_400(cidr)
     is_v4 = isinstance(net, ipaddress.IPv4Network)
+    first_host: str | None
+    last_host: str | None
     if is_v4:
         if net.prefixlen >= 31:
             host_count = net.num_addresses
@@ -212,7 +214,7 @@ async def ip_in_cidr(
     _user: CurrentUser,
     ip: Annotated[str, Query(min_length=2, max_length=64)],
     cidr: Annotated[str, Query(min_length=3, max_length=64)],
-) -> dict:
+) -> dict[str, Any]:
     """判斷某 IP 是否落在某 CIDR 內。"""
     addr = _addr_or_400(ip)
     net = _net_or_400(cidr)
@@ -231,16 +233,16 @@ async def cidr_relation(
     _user: CurrentUser,
     a: Annotated[str, Query(min_length=3, max_length=64)],
     b: Annotated[str, Query(min_length=3, max_length=64)],
-) -> dict:
+) -> dict[str, Any]:
     """兩個 CIDR 的關係：相等 / 包含 / 被包含 / 重疊 / 不相交。"""
     na, nb = _net_or_400(a), _net_or_400(b)
     if na.version != nb.version:
         raise HTTPException(status_code=400, detail="兩個 CIDR 位址家族不一致")
     if na == nb:
         rel = "equal"
-    elif na.supernet_of(nb):
+    elif na.supernet_of(nb):  # type: ignore[arg-type]  # IPv4/IPv6 union；同版本已保證同型
         rel = "a_contains_b"
-    elif na.subnet_of(nb):
+    elif na.subnet_of(nb):  # type: ignore[arg-type]
         rel = "a_within_b"
     elif na.overlaps(nb):
         rel = "overlap"
@@ -254,7 +256,7 @@ async def range_to_cidr(
     _user: CurrentUser,
     start: Annotated[str, Query(min_length=2, max_length=64)],
     end: Annotated[str, Query(min_length=2, max_length=64)],
-) -> dict:
+) -> dict[str, Any]:
     """把起訖 IP 範圍轉成最少數量的 CIDR 區塊。"""
     s, e = _addr_or_400(start), _addr_or_400(end)
     if s.version != e.version:
@@ -273,7 +275,7 @@ async def range_to_cidr(
 async def cidr_to_range(
     _user: CurrentUser,
     cidr: Annotated[str, Query(min_length=3, max_length=64)],
-) -> dict:
+) -> dict[str, Any]:
     """CIDR → 起訖位址與總數。"""
     net = _net_or_400(cidr)
     return {
@@ -286,14 +288,14 @@ async def cidr_to_range(
 async def aggregate(
     _user: CurrentUser,
     cidrs: Annotated[str, Query(min_length=3, max_length=4096)],
-) -> dict:
+) -> dict[str, Any]:
     """把多個 CIDR（逗號或空白分隔）聚合成最少數量的區塊。"""
     parts = [p for p in re.split(r"[,\s]+", cidrs.strip()) if p]
     nets = []
     for p in parts:
         nets.append(_net_or_400(p))
     try:
-        collapsed = [str(n) for n in ipaddress.collapse_addresses(nets)]
+        collapsed = [str(n) for n in ipaddress.collapse_addresses(nets)]  # type: ignore[type-var]
     except (ValueError, TypeError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"input_count": len(nets), "aggregated": collapsed, "count": len(collapsed)}
@@ -303,7 +305,7 @@ async def aggregate(
 async def netmask_convert(
     _user: CurrentUser,
     value: Annotated[str, Query(min_length=1, max_length=64)],
-) -> dict:
+) -> dict[str, Any]:
     """首碼長度 (24 或 /24) 或網路遮罩 (255.255.255.0) 互轉，附 wildcard / hostmask。"""
     v = value.strip().lstrip("/")
     try:
@@ -330,7 +332,7 @@ async def netmask_convert(
 async def mac_format(
     _user: CurrentUser,
     mac: Annotated[str, Query(min_length=12, max_length=23)],
-) -> dict:
+) -> dict[str, Any]:
     """MAC 正規化為各種常見格式。"""
     h = _normalise_mac(mac)
     colon = ":".join(h[i:i+2] for i in range(0, 12, 2))
@@ -352,7 +354,7 @@ _FQDN_LABEL = re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$")
 async def fqdn_parse(
     _user: CurrentUser,
     name: Annotated[str, Query(min_length=1, max_length=255)],
-) -> dict:
+) -> dict[str, Any]:
     """解析 / 驗證 FQDN（RFC 1123）：labels、TLD、host、domain。"""
     n = name.strip().rstrip(".")
     labels = n.split(".")
@@ -372,13 +374,13 @@ async def dns_lookup(
     _user: CurrentUser,
     name: Annotated[str, Query(min_length=1, max_length=255)],
     type: Annotated[str, Query(pattern=r"^(A|AAAA|PTR|ANY)$")] = "ANY",
-) -> dict:
+) -> dict[str, Any]:
     """以系統解析器查 A / AAAA / PTR（stdlib，無外部相依）。"""
     import asyncio
     import socket
 
     name = name.strip().rstrip(".")
-    out: dict = {"name": name, "type": type}
+    out: dict[str, Any] = {"name": name, "type": type}
     try:
         if type == "PTR":
             addr = _addr_or_400(name)
@@ -413,7 +415,7 @@ async def geoip(
     _user: CurrentUser,
     ip: Annotated[str, Query(min_length=1, max_length=64)],
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> dict:
+) -> dict[str, Any]:
     """IP 地理位置查詢（MaxMind GeoLite2 web service；需管理者先在系統設定填憑證）。"""
     addr = _addr_or_400(ip)
     from app.services.geoip import geoip_lookup
@@ -425,7 +427,7 @@ async def dns_mail(
     _user: CurrentUser,
     domain: Annotated[str, Query(min_length=1, max_length=255)],
     dkim_selector: Annotated[str, Query(max_length=128)] = "",
-) -> dict:
+) -> dict[str, Any]:
     """郵件相關 DNS 診斷：MX / SPF (TXT v=spf1) / DMARC (_dmarc TXT) /
     DKIM (<selector>._domainkey TXT)。用 dnspython 查。"""
     import asyncio
@@ -433,7 +435,7 @@ async def dns_mail(
     import dns.resolver
 
     domain = domain.strip().rstrip(".")
-    out: dict = {"domain": domain}
+    out: dict[str, Any] = {"domain": domain}
 
     def _q(name: str, rdtype: str) -> list[str]:
         try:
@@ -450,12 +452,12 @@ async def dns_mail(
         except Exception:
             return []
 
-    def _work() -> dict:
+    def _work() -> dict[str, Any]:
         mx = _q(domain, "MX")
         txt = _q(domain, "TXT")
         spf = [t for t in txt if t.lower().startswith("v=spf1")]
         dmarc = _q(f"_dmarc.{domain}", "TXT")
-        result = {"mx": mx, "txt": txt, "spf": spf, "dmarc": dmarc}
+        result: dict[str, Any] = {"mx": mx, "txt": txt, "spf": spf, "dmarc": dmarc}
         if dkim_selector.strip():
             sel = dkim_selector.strip()
             result["dkim"] = _q(f"{sel}._domainkey.{domain}", "TXT")

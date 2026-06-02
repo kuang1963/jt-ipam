@@ -22,6 +22,7 @@ import ipaddress
 import json
 import re
 import socket
+from typing import Any
 
 from app.core.config import get_settings
 from app.core.safe_http import _BLOCKED_CIDRS, _PRIVATE_CIDRS, _ip_in
@@ -77,7 +78,7 @@ class WindowsDNSAdapter(DNSAdapter):
         self.use_ssl = use_ssl
         self.timeout = timeout
 
-    def _session(self):  # type: ignore[no-untyped-def]
+    def _session(self) -> Any:
         # winrm import 放這裡讓單元測試不需要全部裝齊
         import winrm
         scheme = "https" if self.use_ssl else "http"

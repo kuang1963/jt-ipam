@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import EmailStr, Field
@@ -48,7 +48,7 @@ async def _audit(
     object_type: str,
     object_id: str | None,
     action: str,
-    diff: dict | None,
+    diff: dict[str, Any] | None,
 ) -> None:
     await append_audit(
         session,

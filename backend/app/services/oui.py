@@ -159,7 +159,7 @@ async def vendor_for_mac(session: AsyncSession, mac: str | None) -> str | None:
     ).first()
     if not row:
         return None
-    return row[0] or row[1]
+    return row[0] or row[1]  # type: ignore[no-any-return]
 
 
 async def vendor_map(session: AsyncSession, macs: list[str | None]) -> dict[str, str]:

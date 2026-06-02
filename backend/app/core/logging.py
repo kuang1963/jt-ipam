@@ -24,7 +24,7 @@ def configure_logging() -> None:
 
     structlog.configure(
         processors=[
-            *pre_chain,
+            *pre_chain,  # type: ignore[list-item]
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             _redact_processor,
@@ -41,7 +41,7 @@ def configure_logging() -> None:
     handler.setFormatter(
         structlog.stdlib.ProcessorFormatter(
             processor=structlog.processors.JSONRenderer(ensure_ascii=False),
-            foreign_pre_chain=pre_chain,
+            foreign_pre_chain=pre_chain,  # type: ignore[arg-type]
         )
     )
     root = logging.getLogger()

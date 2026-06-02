@@ -53,7 +53,7 @@ def _send_sync(msg: EmailMessage) -> None:
         if s.smtp_tls_mode == "tls":
             client = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=timeout)
         else:
-            client = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=timeout)
+            client = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=timeout)  # type: ignore[assignment]
         try:
             client.ehlo()
             if s.smtp_tls_mode == "starttls":

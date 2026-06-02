@@ -16,9 +16,9 @@ from app.api.v1.dependencies import CurrentUser, require_admin
 from app.core.audit import append_audit
 from app.core.db import get_session
 from app.core.safe_http import UnsafeOutboundURL, safe_request
+from app.models.ip_hostname import HOSTNAME_SOURCES
 from app.schemas.base import StrictModel
 from app.services.hostname import (
-    HOSTNAME_SOURCES,
     get_disabled,
     get_precedence,
     set_precedence,

@@ -215,7 +215,7 @@ async def find_first_free_address(
     max_ip = (await session.execute(sql, {"sid": str(subnet.id)})).scalar()
     if max_ip is None:
         # 第一個 host = network + 1（::）；通常 network 自身可不 reserve
-        first = net.network_address + 1
+        first = net.network_address + 1  # type: ignore[assignment]
         return str(first)
     candidate = ipaddress.ip_address(str(max_ip)) + 1
     if candidate not in net:

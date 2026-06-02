@@ -19,6 +19,7 @@ from app.api.phpipam.helpers import (
 from app.core.db import get_session
 from app.models.address import IPAddress
 from app.models.subnet import Subnet
+from app.models.user import User
 from app.services.permission import (
     filter_visible,
     get_object_permission,
@@ -29,7 +30,7 @@ from app.services.subnet import find_first_free_address, get_usage
 router = APIRouter()
 
 
-async def _check(session: AsyncSession, user, subnet_id: uuid.UUID) -> Subnet:
+async def _check(session: AsyncSession, user: User, subnet_id: uuid.UUID) -> Subnet:
     s = await session.get(Subnet, subnet_id)
     if s is None:
         raise HTTPException(404, detail="Subnet not found")
@@ -45,8 +46,8 @@ async def _check(session: AsyncSession, user, subnet_id: uuid.UUID) -> Subnet:
 async def get_subnet(
     app_id: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     s = await _check(session, user, subnet_id)
@@ -57,8 +58,8 @@ async def get_subnet(
 async def find_by_cidr(
     app_id: str,
     cidr: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     rows = list(
@@ -80,8 +81,8 @@ async def find_by_cidr(
 async def usage(
     app_id: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     s = await _check(session, user, subnet_id)
@@ -103,8 +104,8 @@ async def usage(
 async def first_free(
     app_id: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     s = await _check(session, user, subnet_id)
@@ -118,8 +119,8 @@ async def first_free(
 async def list_addresses(
     app_id: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     await _check(session, user, subnet_id)
@@ -166,8 +167,8 @@ async def create_subnet(
     app_id: str,
     request: Request,
     payload: Annotated[dict[str, object], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     _require_admin(user)
@@ -246,8 +247,8 @@ async def update_subnet(
     subnet_id: uuid.UUID,
     request: Request,
     payload: Annotated[dict[str, object], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     _require_admin(user)
@@ -285,8 +286,8 @@ async def delete_subnet(
     app_id: str,
     subnet_id: uuid.UUID,
     request: Request,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     _require_admin(user)

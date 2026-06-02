@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import String, cast, func, or_, select
@@ -41,7 +41,7 @@ async def list_ip_changes(
     stmt = select(IPChangeLog)
     count_stmt = select(func.count()).select_from(IPChangeLog)
 
-    def _apply(s):
+    def _apply(s: Any) -> Any:
         if ip_id is not None:
             s = s.where(IPChangeLog.ip_id == ip_id)
         if subnet_id is not None:

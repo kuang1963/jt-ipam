@@ -14,6 +14,7 @@ A09：每次 sync 寫 audit summary
 from __future__ import annotations
 
 import ipaddress
+import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -100,7 +101,7 @@ async def _api_get(
         raise ProxmoxError(f"transport: {exc.__class__.__name__}") from exc
     if resp.status_code != 200:
         raise ProxmoxError(f"Proxmox {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 async def _resolve_base(session: AsyncSession, instance: ProxmoxInstance) -> str:
@@ -246,7 +247,7 @@ async def _link_ip_to_ipam(
 
 
 async def _upsert_iface(
-    session: AsyncSession, vm_id, name: str,
+    session: AsyncSession, vm_id: uuid.UUID, name: str,
     mac: str | None, bridge: str | None, ip: str | None,
 ) -> None:
     obj = (await session.execute(

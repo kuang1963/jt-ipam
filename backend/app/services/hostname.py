@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import time
+import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy import delete, select
@@ -79,7 +80,7 @@ async def get_disabled(session: AsyncSession) -> list[str]:
 
 async def set_precedence(
     session: AsyncSession, *, order: list[str],
-    disabled: list[str] | None = None, updated_by_user_id=None,  # type: ignore[no-untyped-def]
+    disabled: list[str] | None = None, updated_by_user_id: uuid.UUID | None = None,
 ) -> tuple[list[str], list[str]]:
     clean = _sanitize_order(order)
     # 不能把所有來源都停用（至少留 manual 可用），且 disabled 必須是合法來源
@@ -131,7 +132,7 @@ async def _observations_for(session: AsyncSession, ip_id) -> dict[str, str]:  # 
 
 async def recompute_effective(
     session: AsyncSession, *, ip: IPAddress, source: str | None = None,
-    actor_user_id=None,  # type: ignore[no-untyped-def]
+    actor_user_id: str | None = None,
 ) -> bool:
     """依現有觀測重算 ip.hostname；有變就更新並寫異動記錄。回傳是否有變。"""
     obs = await _observations_for(session, ip.id)
@@ -152,7 +153,7 @@ async def recompute_effective(
 
 async def apply_observation(
     session: AsyncSession, *, ip: IPAddress, source: str, hostname: str | None,
-    actor_user_id=None,  # type: ignore[no-untyped-def]
+    actor_user_id: str | None = None,
 ) -> bool:
     """記錄某來源對此 IP 的 hostname 觀測（None/空 → 清掉該來源），再重算有效值。
 

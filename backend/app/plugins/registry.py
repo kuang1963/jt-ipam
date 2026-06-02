@@ -38,7 +38,7 @@ class JtIpamPlugin:
     on_shutdown: Callable[[FastAPI], None] | None = None
 
 
-_loaded: list[PluginInfo] = field(default_factory=list)  # type: ignore[arg-type]
+_loaded: list[PluginInfo] = field(default_factory=list)
 _plugins: list[PluginInfo] = []
 
 
@@ -54,7 +54,7 @@ def load_plugins(app) -> list[PluginInfo]:  # type: ignore[no-untyped-def]
         eps = _md.entry_points(group=ENTRY_POINT_GROUP)
     except TypeError:
         # 老版 importlib.metadata 行為
-        eps = _md.entry_points().get(ENTRY_POINT_GROUP, [])  # type: ignore[assignment]
+        eps = _md.entry_points().get(ENTRY_POINT_GROUP, [])  # type: ignore[arg-type]
     for ep in eps:
         info = PluginInfo(name=ep.name, version="?")
         try:

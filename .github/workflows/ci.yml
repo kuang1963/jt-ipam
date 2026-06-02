@@ -123,7 +123,7 @@ jobs:
 
       - name: mypy
         working-directory: backend
-        run: .venv/bin/mypy app/ || true   # mypy strict 還沒全綠；不阻擋
+        run: .venv/bin/mypy app/   # strict 全綠 → 阻擋
 
       - name: bandit (SAST, A05)
         working-directory: backend

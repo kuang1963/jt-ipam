@@ -30,7 +30,7 @@ _AGENT_DIR = __import__("pathlib").Path(__file__).resolve().parents[5] / "agent"
 
 
 @router.get("/installer.sh", include_in_schema=False)
-async def download_installer():
+async def download_installer() -> Any:
     """一鍵安裝器（純程式碼、無密鑰）→ 可 curl | sudo bash。"""
     from fastapi.responses import PlainTextResponse
     p = _AGENT_DIR / "jt-ipam-agent-installer.sh"
@@ -40,7 +40,7 @@ async def download_installer():
 
 
 @router.get("/agent.py", include_in_schema=False)
-async def download_agent():
+async def download_agent() -> Any:
     from fastapi.responses import PlainTextResponse
     p = _AGENT_DIR / "jt_ipam_agent.py"
     if not p.exists():
@@ -120,7 +120,7 @@ async def list_agents(
     )
     total = int(await session.scalar(select(func.count()).select_from(ScanAgent)) or 0)
     # 各 agent 負責掃描的子網路數
-    counts: dict = {}
+    counts: dict[Any, Any] = {}
     if rows:
         crows = (await session.execute(
             select(Subnet.scan_agent_id, func.count())
@@ -373,7 +373,7 @@ async def agent_report(
     )).all()
     agent_subnet_ids = {s.id for s in agent_subnets}
     # 可自動新增的網段（有開掃描）→ (network, subnet_id)，依首碼長度由長到短比對
-    addable_nets: list[tuple] = []
+    addable_nets: list[tuple[Any, ...]] = []
     for s in agent_subnets:
         if not s.scan_enabled:
             continue

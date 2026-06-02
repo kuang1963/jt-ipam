@@ -42,5 +42,5 @@ async def readiness(response: Response) -> dict[str, str]:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {"status": "redis_unavailable"}
     finally:
-        await redis.aclose()
+        await redis.aclose()  # type: ignore[attr-defined]
     return {"status": "ready"}

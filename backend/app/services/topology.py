@@ -34,7 +34,7 @@ from app.models.subnet import Subnet
 async def build_topology(
     session: AsyncSession,
     *,
-    user=None,  # RBAC：限縮成該 user 可見的 device/subnet
+    user: Any = None,  # RBAC：限縮成該 user 可見的 device/subnet
     location_id: uuid.UUID | None = None,
     subnet_ids: list[uuid.UUID] | None = None,
     include_wireless: bool = True,
@@ -104,8 +104,8 @@ async def build_topology(
         dstmt = dstmt.where(Device.id.in_(vis_dev))
     devices = list((await session.execute(dstmt)).scalars().all())
     device_objs: dict[str, Device] = {}
-    for d in devices:
-        device_objs[str(d.id)] = d
+    for d in devices:  # type: ignore[assignment]
+        device_objs[str(d.id)] = d  # type: ignore[assignment]
         nodes[str(d.id)] = {
             "data": {
                 "id": str(d.id),
@@ -181,8 +181,8 @@ async def build_topology(
         missing = [d for d in pair_dev_ids if str(d) not in nodes]
         if missing:
             extra = (await session.execute(select(Device).where(Device.id.in_(missing)))).scalars().all()
-            for d in extra:
-                device_objs[str(d.id)] = d
+            for d in extra:  # type: ignore[assignment]
+                device_objs[str(d.id)] = d  # type: ignore[assignment]
                 nodes[str(d.id)] = {"data": {
                     "id": str(d.id), "label": d.name, "type": d.type,
                     "vendor": d.vendor, "model": d.model, "serial": d.serial,
@@ -201,10 +201,10 @@ async def build_topology(
             # 1) 兩端都是已知 device 且都可見 → device↔device 邊
             if a_vis and b_vis:
                 # 對接的兩端各有一條 tunnel（A→B、B→A），同一對 device 只畫一條邊
-                pair = frozenset((a_id, b_id))  # type: ignore[arg-type]
+                pair = frozenset((a_id, b_id))
                 if pair in seen_vpn_pairs:
                     continue
-                seen_vpn_pairs.add(pair)
+                seen_vpn_pairs.add(pair)  # type: ignore[arg-type]
                 # 對接邊上標出「中間經過的 WAN 端點」：a_endpoint ↔ b_endpoint
                 # （WireGuard/IPsec/OpenVPN 的對外公網 IP / FQDN）
                 wan = " ↔ ".join(x for x in (t.a_endpoint, t.b_endpoint) if x)
@@ -300,7 +300,7 @@ async def build_topology(
             if d_str not in visible_device_ids:
                 continue
             try:
-                a = _ipaddr.ip_address(str(ip).split("/")[0])
+                a = _ipaddr.ip_address(str(ip).split("/")[0])  # type: ignore[assignment]
             except ValueError:
                 continue
             for sn, net in cand:
@@ -429,7 +429,7 @@ async def build_topology(
                 data["rack"] = rack_names[str(dev.rack_id)]
             if dev.location_id and str(dev.location_id) in loc_names:
                 data["location"] = loc_names[str(dev.location_id)]
-            ln = ln_map.get(d_str)
+            ln = ln_map.get(d_str)  # type: ignore[assignment]
             if ln is not None:
                 # Device.type 多半是 "other"（LibreNMS 早期 sync 沒細分）；用 os/hardware
                 # 重新推一次，讓 AP/交換器/伺服器在圖例與顏色上分得出來。

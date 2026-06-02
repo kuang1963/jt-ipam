@@ -14,7 +14,7 @@ from redis.asyncio import Redis
 
 from app.core.config import get_settings
 
-_redis: Redis | None = None
+_redis: Redis[bytes] | None = None
 
 _LUA_SLIDING_WINDOW: Final[str] = """
 -- KEYS[1] = bucket key
@@ -35,7 +35,7 @@ return {1, count + 1}
 """
 
 
-def _redis_client() -> Redis:
+def _redis_client() -> Redis[bytes]:
     global _redis
     if _redis is None:
         _redis = Redis.from_url(get_settings().redis_url, decode_responses=False)

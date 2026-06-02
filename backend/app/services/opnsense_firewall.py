@@ -54,7 +54,7 @@ def _aad_secret(instance_id) -> bytes:  # type: ignore[no-untyped-def]
 
 
 def encrypt_credentials(
-    instance_id, api_key: str, api_secret: str,  # type: ignore[no-untyped-def]
+    instance_id: uuid.UUID, api_key: str, api_secret: str,
 ) -> dict[str, bytes]:
     k_ct, k_nc = encrypt_secret(api_key, aad=_aad_key(instance_id))
     s_ct, s_nc = encrypt_secret(api_secret, aad=_aad_secret(instance_id))
@@ -94,7 +94,7 @@ async def _api_get(fw: OPNsenseFirewall, path: str, *, timeout: float = 15.0) ->
         raise OPNsenseError(f"transport: {exc.__class__.__name__}") from exc
     if resp.status_code != 200:
         raise OPNsenseError(f"OPNsense GET {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 async def _api_post(
@@ -114,7 +114,7 @@ async def _api_post(
         raise OPNsenseError(f"transport: {exc.__class__.__name__}") from exc
     if resp.status_code not in (200, 201):
         raise OPNsenseError(f"OPNsense POST {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 # ─────────────────── 高階 API ───────────────────
@@ -668,7 +668,7 @@ async def sync_nat_rules(
             existing.src_port = src_port
             existing.dst_port = dst_port
             existing.src_interface = r.get("interface") or None
-            existing.dst_ip_id = dst_ip_id
+            existing.dst_ip_id = dst_ip_id  # type: ignore[assignment]
             existing.device_id = device_id
             existing.description = r.get("description") or None
             for _k, _v in extra.items():
@@ -713,7 +713,7 @@ async def sync_nat_rules(
         "removed": removed,
     }
     if legacy_fallback_used:
-        out["legacy_xml_fallback"] = 1  # type: ignore[assignment]
+        out["legacy_xml_fallback"] = 1
     if errors:
         out["endpoint_errors"] = errors  # type: ignore[assignment]
     return out
@@ -742,7 +742,7 @@ async def sync_filter_rules(
             data = await _api_get(fw, "/api/firewall/filter/get")
         except OPNsenseError as exc:
             return {"seen": 0, "inserted": 0, "updated": 0, "removed": 0,
-                    "error": str(exc)[:120]}
+                    "error": str(exc)[:120]}  # type: ignore[dict-item]
 
     rows: list[dict[str, Any]] = []
     if isinstance(data, dict):
@@ -860,7 +860,7 @@ async def sync_openvpn_sessions(
     try:
         data = await _api_get(fw, "/api/openvpn/service/searchSessions")
     except OPNsenseError:
-        return {"seen": 0, "matched": 0, "error": "endpoint not available"}
+        return {"seen": 0, "matched": 0, "error": "endpoint not available"}  # type: ignore[dict-item]
     rows = data.get("rows") or []
     seen = matched = 0
     for r in rows:
@@ -922,7 +922,7 @@ async def sync_vpn_tunnels(
     def _on(v) -> bool:  # type: ignore[no-untyped-def]
         return str(v).lower() in ("1", "true", "yes", "on")
 
-    async def _upsert(label: str, vtype: str, b_endpoint, status: str, desc: str,
+    async def _upsert(label: str, vtype: str, b_endpoint: str | None, status: str, desc: str,
                       local_pk: str | None = None, peer_pk: str | None = None) -> None:
         nonlocal inserted, updated
         full = f"{fw.name}/{label}"[:128]
@@ -945,7 +945,7 @@ async def sync_vpn_tunnels(
             obj.peer_public_key = peer_pk or None
             updated += 1
 
-    def _pk(d: dict) -> str:  # 容錯不同欄位命名
+    def _pk(d: dict[str, Any]) -> str:  # 容錯不同欄位命名
         for k in ("pubkey", "publickey", "public_key", "pubKey"):
             v = (d.get(k) or "").strip()
             if v:
@@ -956,7 +956,7 @@ async def sync_vpn_tunnels(
     try:
         # 本地 instance 公鑰；單一 server 時直接當 local_public_key，
         # 多 server 時用 peers(含 client uuid) 對應到正確的 server。
-        servers: list[dict] = []
+        servers: list[dict[str, Any]] = []
         try:
             sdata = await _api_get(fw, "/api/wireguard/server/searchServer")
             servers = list(sdata.get("rows") or [])

@@ -51,7 +51,7 @@ class UnboundOPNsenseAdapter(DNSAdapter):
             raise DNSAdapterError(
                 f"OPNsense Unbound GET {path}: {resp.status_code} {resp.text[:200]}"
             )
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     async def _post(self, path: str, body: dict | None = None) -> dict:  # type: ignore[type-arg]
         url = f"{self.api_url}{path}"
@@ -67,7 +67,7 @@ class UnboundOPNsenseAdapter(DNSAdapter):
             raise DNSAdapterError(
                 f"OPNsense Unbound POST {path}: {resp.status_code} {resp.text[:200]}"
             )
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     async def healthcheck(self) -> dict[str, object]:
         data = await self._get("/api/unbound/service/status")
@@ -122,7 +122,7 @@ class UnboundOPNsenseAdapter(DNSAdapter):
             hostname = entry.get("hostname") or "@"
             rtype = (entry.get("rr") or "A").upper()
             if domain == target_domain and hostname == target_host and rtype == op.type:
-                return uid
+                return uid  # type: ignore[no-any-return]
         return None
 
     async def _reconfigure(self) -> None:

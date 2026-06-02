@@ -140,7 +140,7 @@ async def get_device_vlans(
     ]
 
 
-async def _resolve_device_ips(session: AsyncSession, devices: list) -> dict:
+async def _resolve_device_ips(session: AsyncSession, devices: list[Any]) -> dict[Any, Any]:
     """解析每台 device 的「有效管理 IP」供清單/明細顯示。
     優先序：primary_ip_id → LibreNMS 已知管理 IP（primary_ip/hostname）→ 裝置名稱本身是 IP。
     （多數 device 沒有連 IPAddress，但 LibreNMS 知道、或名稱就是 IP，否則 IP 欄會整排空白。）
@@ -151,14 +151,14 @@ async def _resolve_device_ips(session: AsyncSession, devices: list) -> dict:
     from app.models.librenms import LibreNMSDevice
 
     pip_ids = {d.primary_ip_id for d in devices if d.primary_ip_id}
-    pip_map: dict = {}
+    pip_map: dict[Any, Any] = {}
     if pip_ids:
         for pid, ip in (await session.execute(
             select(IPAddress.id, IPAddress.ip).where(IPAddress.id.in_(pip_ids))
         )).all():
             pip_map[pid] = str(ip).split("/")[0]
     dev_ids = [d.id for d in devices]
-    ln_map: dict = {}
+    ln_map: dict[Any, Any] = {}
     if dev_ids:
         for jid, pip, host in (await session.execute(
             select(LibreNMSDevice.jt_ipam_device_id, LibreNMSDevice.primary_ip,
@@ -172,7 +172,7 @@ async def _resolve_device_ips(session: AsyncSession, devices: list) -> dict:
                     break
                 except ValueError:
                     continue
-    out: dict = {}
+    out: dict[Any, Any] = {}
     for d in devices:
         ip = pip_map.get(d.primary_ip_id) if d.primary_ip_id else None
         if not ip:
@@ -221,7 +221,7 @@ async def list_devices(
 
     from app.models.address import IPAddress
     eff_ips = {v for v in ip_map.values() if v}
-    addr_by_ip: dict[str, tuple] = {}
+    addr_by_ip: dict[str, tuple[Any, ...]] = {}
     if eff_ips:
         for aid, ahost, adev in (await session.execute(
             select(IPAddress.id, _func.host(IPAddress.ip), IPAddress.device_id)
@@ -248,7 +248,7 @@ async def get_device_relations(
     device_id: uuid.UUID,
     _user: CurrentUser,
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> dict:
+) -> dict[str, Any]:
     """裝置的上下關係鏈：機房 → 機櫃 → 裝置 → 主要 IP → 子網路 → 區段。"""
     from app.models.address import IPAddress
     from app.models.location import Location, Rack
@@ -258,7 +258,7 @@ async def get_device_relations(
     dev = await session.get(Device, device_id)
     if dev is None:
         raise HTTPException(404, detail="Device not found")
-    chain: list[dict] = []
+    chain: list[dict[str, Any]] = []
     if dev.location_id:
         loc = await session.get(Location, dev.location_id)
         if loc is not None:

@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import socket
+from typing import Any
 
 import dns.message
 import dns.name
@@ -85,12 +86,12 @@ class Bind9Adapter(DNSAdapter):
         self.zones = zones or []
         self.timeout = timeout
 
-    def _keyring(self):  # type: ignore[no-untyped-def]
+    def _keyring(self) -> Any:
         if not self.tsig_keyname or not self.tsig_secret:
             return None
         return dns.tsigkeyring.from_text({self.tsig_keyname: self.tsig_secret})
 
-    def _algo(self):  # type: ignore[no-untyped-def]
+    def _algo(self) -> Any:
         return _TSIG_ALGOS.get(self.tsig_algorithm.lower(), dns.tsig.HMAC_SHA256)
 
     async def healthcheck(self) -> dict[str, object]:
@@ -132,7 +133,7 @@ class Bind9Adapter(DNSAdapter):
                         self.server_address,
                         zone_name,
                         keyring=keyring,
-                        keyalgorithm=self._algo() if keyring else None,
+                        keyalgorithm=self._algo() if keyring else None,  # type: ignore[arg-type]
                         port=self.port,
                         timeout=self.timeout,
                     )

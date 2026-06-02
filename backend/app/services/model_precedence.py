@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import time
+import uuid
 
 from sqlalchemy import select  # noqa: F401  (對齊其它 precedence 模組的 import 形狀)
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,7 +69,7 @@ async def get_model_disabled(session: AsyncSession) -> list[str]:
 
 async def set_model_precedence(
     session: AsyncSession, *, order: list[str],
-    disabled: list[str] | None = None, updated_by_user_id=None,  # type: ignore[no-untyped-def]
+    disabled: list[str] | None = None, updated_by_user_id: uuid.UUID | None = None,
 ) -> tuple[list[str], list[str]]:
     clean = _sanitize(order)
     clean_disabled = [s for s in (disabled or []) if s in MODEL_SOURCES and s != "manual"]

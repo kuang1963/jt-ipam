@@ -10,6 +10,7 @@ import base64
 import io
 import tarfile
 import time
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -89,7 +90,7 @@ async def set_geoip_config(
     session: AsyncSession, *,
     account_id: str | None = None, license_key: str | None = None,
     editions: list[str] | None = None, auto_update: bool | None = None,
-    frequency: str | None = None, updated_by=None,  # type: ignore[no-untyped-def]
+    frequency: str | None = None, updated_by: uuid.UUID | None = None,
 ) -> None:
     from sqlalchemy.orm.attributes import flag_modified
     row = await session.get(SystemSetting, GEOIP_KEY)

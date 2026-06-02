@@ -151,6 +151,19 @@ plugins = ["pydantic.mypy"]
 module = ["alembic.*"]
 ignore_errors = true
 
+# 第三方套件無型別 stub（py.typed）→ 不分析其匯入，避免 import-untyped 連鎖
+[[tool.mypy.overrides]]
+module = [
+    "pyrad.*", "onelogin.*", "ldap3.*", "pymysql.*",
+    "defusedxml.*", "winrm.*", "pywinrm.*",
+]
+ignore_missing_imports = true
+
+# strawberry GraphQL 的 field/resolver 裝飾器無型別 → 不報 untyped-decorator
+[[tool.mypy.overrides]]
+module = ["app.graphql.*"]
+disallow_untyped_decorators = false
+
 # ─────────────────────────────────────────────────────────
 # Pytest
 # ─────────────────────────────────────────────────────────

@@ -76,9 +76,9 @@ def _build(d: dict[str, list[str]]) -> WhoisRecord:
     for key in ("inetnum", "inet6num", "cidr", "route", "route6"):
         for v in d.get(key, []):
             rec.cidrs.extend(_parse_inetnum(v))
-    rec.netname = (d.get("netname") or [None])[0]
+    rec.netname = (d.get("netname") or [None])[0]  # type: ignore[list-item]
     rec.descr = d.get("descr") or []
-    rec.country = (d.get("country") or [None])[0]
+    rec.country = (d.get("country") or [None])[0]  # type: ignore[list-item]
     return rec
 
 

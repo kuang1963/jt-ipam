@@ -1081,6 +1081,8 @@ async def approve_ip_request(session: AsyncSession, *, user: User, request_id: s
     if req is None:
         raise IPAMToolError("request not found")
     sub = await session.get(Subnet, req.subnet_id)
+    if sub is None:
+        raise IPAMToolError("subnet not found")
     try:
         res = await approve_request(session, request=req, subnet=sub, approver=user)
     except Exception as exc:

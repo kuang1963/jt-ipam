@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import uuid
 from collections import defaultdict
-from typing import Literal
+from typing import Any, Literal
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,7 +59,7 @@ async def _user_group_ids(session: AsyncSession, user_id: uuid.UUID) -> list[uui
     return [row[0] for row in (await session.execute(stmt)).all()]
 
 
-def _principal_conds(user: User, group_ids: list[uuid.UUID]):
+def _principal_conds(user: User, group_ids: list[uuid.UUID]) -> list[Any]:
     principals: list[tuple[str, uuid.UUID]] = [("user", user.id)]
     principals.extend(("group", gid) for gid in group_ids)
     return [
@@ -92,10 +92,10 @@ async def _parents(session: AsyncSession, otype: str, oid: uuid.UUID) -> list[tu
             if r[0]: out.append(("section", r[0]))
             if r[1]: out.append(("customer", r[1]))
     elif otype == "section":
-        r = (await session.execute(select(Section.customer_id).where(Section.id == oid))).first()
+        r = (await session.execute(select(Section.customer_id).where(Section.id == oid))).first()  # type: ignore[assignment]
         if r and r[0]: out.append(("customer", r[0]))
     elif otype == "device":
-        r = (await session.execute(
+        r = (await session.execute(  # type: ignore[assignment]
             select(Device.rack_id, Device.location_id, Device.customer_id).where(Device.id == oid)
         )).first()
         if r:
@@ -103,7 +103,7 @@ async def _parents(session: AsyncSession, otype: str, oid: uuid.UUID) -> list[tu
             if r[1]: out.append(("location", r[1]))
             if r[2]: out.append(("customer", r[2]))
     elif otype == "rack":
-        r = (await session.execute(select(Rack.location_id).where(Rack.id == oid))).first()
+        r = (await session.execute(select(Rack.location_id).where(Rack.id == oid))).first()  # type: ignore[assignment]
         if r and r[0]: out.append(("location", r[0]))
     return out
 
@@ -187,7 +187,7 @@ async def _resolve_visible(
     from app.models.section import Section
     from app.models.subnet import Subnet
 
-    async def ids_of(model_id_col, *conds) -> set[uuid.UUID]:
+    async def ids_of(model_id_col: Any, *conds: Any) -> set[uuid.UUID]:
         if not conds:
             return set()
         rows = (await session.execute(select(model_id_col).where(or_(*conds)))).all()

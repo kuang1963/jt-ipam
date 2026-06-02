@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import base64
 import time
+import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
@@ -91,7 +92,7 @@ async def _authenticate(inst: WazuhInstance) -> str:
     if not token:
         raise WazuhError(f"Wazuh auth: no token in response: {data}")
     _token_cache[str(inst.id)] = _Token(jwt=token, expires_at=time.time() + 12 * 60)
-    return token
+    return token  # type: ignore[no-any-return]
 
 
 def _invalidate_token(inst: WazuhInstance) -> None:
@@ -128,7 +129,7 @@ async def _api_get(
         )
     if resp.status_code != 200:
         raise WazuhError(f"Wazuh GET {path}: {resp.status_code} {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 async def healthcheck(inst: WazuhInstance) -> dict[str, Any]:
@@ -281,7 +282,7 @@ async def sync_agents(session: AsyncSession, inst: WazuhInstance) -> dict[str, A
 
 
 async def find_missing_agents(
-    session: AsyncSession, *, instance_id=None, hostnamed_only: bool = True,  # type: ignore[no-untyped-def]
+    session: AsyncSession, *, instance_id: uuid.UUID | None = None, hostnamed_only: bool = True,
 ) -> list[dict[str, Any]]:
     """找應該裝 Wazuh 卻沒有 active agent 的 IP。
 

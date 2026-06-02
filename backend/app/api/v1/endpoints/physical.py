@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import Field
@@ -30,7 +30,7 @@ router = APIRouter(tags=["physical"])
 
 async def _audit(
     session: AsyncSession, *, user: CurrentUser, request: Request,
-    object_type: str, object_id: str | None, action: str, diff: dict | None,
+    object_type: str, object_id: str | None, action: str, diff: dict[str, Any] | None,
 ) -> None:
     await append_audit(
         session,

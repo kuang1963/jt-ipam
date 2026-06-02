@@ -23,7 +23,7 @@ from app.api.phpipam.helpers import phpipam_current_user, phpipam_response
 from app.core.audit import append_audit
 from app.core.db import get_session
 from app.core.security import generate_api_token
-from app.models.user import APIToken
+from app.models.user import APIToken, User
 from app.services.auth import (
     AccountInactive,
     AccountLocked,
@@ -119,7 +119,7 @@ async def logout(
     app_id: str,
     request: Request,
     session: Annotated[AsyncSession, Depends(get_session)],
-    user=Depends(phpipam_current_user),
+    user: Annotated[User, Depends(phpipam_current_user)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     raw = request.headers.get("token") or request.headers.get("phpipam-token")
@@ -145,7 +145,7 @@ async def extend(
     app_id: str,
     session: Annotated[AsyncSession, Depends(get_session)],
     request: Request,
-    user=Depends(phpipam_current_user),
+    user: Annotated[User, Depends(phpipam_current_user)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     raw = request.headers.get("token") or request.headers.get("phpipam-token")
@@ -174,7 +174,7 @@ async def extend(
 @router.get("/{app_id}/user/")
 async def whoami(
     app_id: str,
-    user=Depends(phpipam_current_user),
+    user: Annotated[User, Depends(phpipam_current_user)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     return phpipam_response(

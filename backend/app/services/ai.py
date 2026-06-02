@@ -234,7 +234,7 @@ def _lang_instruction(locale: str | None) -> str:
 async def chat(
     session: AsyncSession,
     *,
-    user,                                # type: ignore[no-untyped-def]
+    user: Any,
     messages: list[dict[str, Any]],
     locale: str | None = None,
     max_iterations: int = 4,
@@ -301,7 +301,7 @@ async def chat(
     return {"answer": answer, "messages": convo, **_meta()}
 
 
-async def _force_final_answer(cfg, convo: list[dict[str, Any]]) -> str:
+async def _force_final_answer(cfg: Any, convo: list[dict[str, Any]]) -> str:
     """max_iterations 用完時的收尾：不帶 tools 再呼叫一次，要 LLM 直接作答。"""
     url = f"{cfg.url.rstrip('/')}/api/chat"
     body = {"model": cfg.chat_model, "messages": convo, "stream": False, "options": {"temperature": 0.2}}
@@ -315,7 +315,7 @@ async def _force_final_answer(cfg, convo: list[dict[str, Any]]) -> str:
             content = msg.get("content")
             if content:
                 convo.append({"role": "assistant", "content": content})
-                return content
+                return content  # type: ignore[no-any-return]
     except (UnsafeOutboundURL, httpx.HTTPError):
         pass
     return "（查詢步驟過多仍未完成，請把問題拆小一點再試一次）"
@@ -346,7 +346,7 @@ def _page_context_line(context: dict[str, Any] | None) -> str:
 def _build_chat_context(
     messages: list[dict[str, Any]], locale: str | None,
     page_context: dict[str, Any] | None = None,
-):
+) -> Any:
     """共用：把 IPAM tools 轉 Ollama schema + 組 system prompt + 接上對話。
 
     回傳 (ollama_tools, convo)。chat / chat_stream 共用，避免兩份 prompt 漂移。
@@ -404,7 +404,7 @@ def _build_chat_context(
     return ollama_tools, convo
 
 
-async def _run_tool_calls(session, user, tool_calls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+async def _run_tool_calls(session: AsyncSession, user: Any, tool_calls: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """執行 LLM 要求的 tool_calls，回傳要 append 進 convo 的 tool 訊息（含 name）。"""
     from app.mcp.tools import TOOLS, IPAMToolError
 
@@ -438,7 +438,7 @@ async def _run_tool_calls(session, user, tool_calls: list[dict[str, Any]]) -> li
 async def chat_stream(
     session: AsyncSession,
     *,
-    user,                                # type: ignore[no-untyped-def]
+    user: Any,
     messages: list[dict[str, Any]],
     locale: str | None = None,
     max_iterations: int = 4,

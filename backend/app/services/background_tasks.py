@@ -24,7 +24,7 @@ from app.models.background_task import BackgroundTask
 logger = logging.getLogger(__name__)
 
 # 保留 fire-and-forget task 的強參照，避免被 GC 在跑完前回收（asyncio 只持弱參照）。
-_BG_TASKS: set[asyncio.Task] = set()
+_BG_TASKS: set[asyncio.Task[Any]] = set()
 
 # runner 簽名：(session, task) → 回 dict summary 或 raise
 TaskRunner = Callable[[AsyncSession, BackgroundTask], Awaitable[dict[str, Any] | None]]

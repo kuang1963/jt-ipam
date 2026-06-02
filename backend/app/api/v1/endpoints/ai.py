@@ -90,7 +90,7 @@ async def chat(
     await limit_per_ip(request, name="ai")
     msgs = [{"role": m.role, "content": m.content} for m in payload.messages]
     try:
-        screen_user_messages(msgs)
+        screen_user_messages(msgs)  # type: ignore[arg-type]
     except AIInputRejected as exc:
         raise HTTPException(status_code=400, detail=f"input_rejected:{exc.reason}") from exc
     # 抓使用者偏好語言（zh-TW / en-US 等）→ system prompt 強制 LLM 用這語言回
@@ -154,7 +154,7 @@ async def chat_stream(
     await limit_per_ip(request, name="ai")
     msgs = [{"role": m.role, "content": m.content} for m in payload.messages]
     try:
-        screen_user_messages(msgs)
+        screen_user_messages(msgs)  # type: ignore[arg-type]
     except AIInputRejected as exc:
         raise HTTPException(status_code=400, detail=f"input_rejected:{exc.reason}") from exc
     from app.models.user import UserPreference
@@ -167,7 +167,7 @@ async def chat_stream(
     if not cfg.enabled:
         raise HTTPException(status_code=503, detail="Ollama is disabled")
 
-    async def event_gen():
+    async def event_gen() -> Any:
         iterations = 0
         try:
             async for ev in ai_service.chat_stream(
@@ -239,7 +239,7 @@ async def reindex(
 
 # ─────────────────── AI chat 歷程 ───────────────────
 
-def _conv_summary(conv, n_msgs: int | None = None, *, with_user: bool = False) -> dict[str, Any]:
+def _conv_summary(conv: Any, n_msgs: int | None = None, *, with_user: bool = False) -> dict[str, Any]:
     out: dict[str, Any] = {
         "id": str(conv.id),
         "title": conv.title,

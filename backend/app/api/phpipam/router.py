@@ -9,6 +9,7 @@ addresses 的核心唯讀路徑與 token 換取流程。寫入路徑（POST/PATC
 from __future__ import annotations
 
 import time
+from typing import Any
 
 from fastapi import APIRouter, Request
 
@@ -22,7 +23,7 @@ phpipam_router.include_router(addresses.router)
 
 
 @phpipam_router.get("/{app_id}/", include_in_schema=False)
-async def app_root(app_id: str, request: Request) -> dict:
+async def app_root(app_id: str, request: Request) -> dict[str, Any]:
     started = time.perf_counter()
     elapsed = round(time.perf_counter() - started, 4)
     return {

@@ -9,7 +9,7 @@ OWASP A01 / A07：
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -110,7 +110,7 @@ def require_object_perm(
     required: PermLevel,
     *,
     path_param: str,
-):
+) -> Any:
     """產生 dependency：檢查當前 user 對 path_param 指定的 object 是否達到 required。
 
     用法：

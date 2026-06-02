@@ -7,12 +7,8 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 import strawberry
-
-if TYPE_CHECKING:
-    from app.graphql.schema import Info  # noqa: F401
 
 
 @strawberry.type

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
@@ -46,7 +46,7 @@ async def list_customers(
     # 每個客戶的子網路數（一次 group by 撈本頁）
     from app.models.subnet import Subnet
     cust_ids = [r.id for r in rows]
-    counts: dict = {}
+    counts: dict[Any, Any] = {}
     if cust_ids:
         for cid, n in (await session.execute(
             select(Subnet.customer_id, func.count())

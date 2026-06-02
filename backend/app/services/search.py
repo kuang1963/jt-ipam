@@ -536,7 +536,7 @@ async def _search_text_trgm(
     # RBAC：過濾掉不可見的 device/customer/rack/location 結果（subnet/section/ip 已於各區塊內過濾）
     from app.services.permission import visible_ids
     for otype in ("device", "customer", "rack", "location"):
-        vis = await visible_ids(session, user=user, object_type=otype)  # type: ignore[arg-type]
+        vis = await visible_ids(session, user=user, object_type=otype)
         if vis is not None:
             allow = {str(x) for x in vis}
             out = [h for h in out if h.type != otype or h.id in allow]
@@ -555,7 +555,7 @@ async def search(
     """主搜尋入口；依偵測到的查詢類型走最相關的子搜尋，並補上 trigram 結果。"""
     q = q.strip()
     if len(q) < 2:
-        return {"detected": "empty", "results": []}  # type: ignore[return-value]
+        return {"detected": "empty", "results": []}  # type: ignore[dict-item]
 
     kind = _detect_query_kind(q)
     hits: list[SearchHit] = []

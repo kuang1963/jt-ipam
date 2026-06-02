@@ -36,7 +36,7 @@ class PowerDNSAdapter(DNSAdapter):
             raise DNSAdapterError(f"transport: {exc.__class__.__name__}") from exc
         if resp.status_code != 200:
             raise DNSAdapterError(f"PowerDNS returned {resp.status_code}")
-        return resp.json()
+        return resp.json()  # type: ignore[no-any-return]
 
     async def list_zones(self) -> list[DNSZoneInfo]:
         url = f"{self.api_url}/api/v1/servers/{self.server_id}/zones"

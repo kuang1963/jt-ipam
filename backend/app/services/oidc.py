@@ -138,7 +138,7 @@ async def exchange_code(code: str) -> dict[str, Any]:
         raise OIDCError(f"SSRF guard rejected URL: {exc}") from exc
     if resp.status_code != 200:
         raise OIDCError(f"token exchange {resp.status_code}: {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 async def fetch_userinfo(access_token: str) -> dict[str, Any]:
@@ -155,7 +155,7 @@ async def fetch_userinfo(access_token: str) -> dict[str, Any]:
         raise OIDCError(f"SSRF guard rejected URL: {exc}") from exc
     if resp.status_code != 200:
         raise OIDCError(f"userinfo {resp.status_code}: {resp.text[:200]}")
-    return resp.json()
+    return resp.json()  # type: ignore[no-any-return]
 
 
 # ─────────────────── User mapping ───────────────────

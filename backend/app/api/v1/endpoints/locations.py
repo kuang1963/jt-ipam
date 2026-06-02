@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse
@@ -74,16 +74,16 @@ async def list_locations(
     total = int(await session.scalar(cstmt) or 0)
     # 本頁各機房的機櫃數 / 裝置數
     loc_ids = [r.id for r in rows]
-    rack_counts: dict = {}
-    dev_counts: dict = {}
+    rack_counts: dict[Any, int] = {}
+    dev_counts: dict[Any, int] = {}
     if loc_ids:
         from app.models.device import Device
         from app.models.location import Rack
-        rack_counts = dict((await session.execute(
+        rack_counts = dict((await session.execute(  # type: ignore[arg-type]
             select(Rack.location_id, func.count()).where(Rack.location_id.in_(loc_ids))
             .group_by(Rack.location_id)
         )).all())
-        dev_counts = dict((await session.execute(
+        dev_counts = dict((await session.execute(  # type: ignore[arg-type]
             select(Device.location_id, func.count()).where(Device.location_id.in_(loc_ids))
             .group_by(Device.location_id)
         )).all())
@@ -437,7 +437,7 @@ class _BulkDelete(StrictModel):
     ids: list[uuid.UUID]
 
 
-async def _bulk(session, model_cls, object_type, user, ids, actor_ip, actor_ua, request_id):
+async def _bulk(session: AsyncSession, model_cls: type[Any], object_type: str, user: Any, ids: list[uuid.UUID], actor_ip: str | None, actor_ua: str | None, request_id: str | None) -> dict[str, object]:
     if not ids: return {"deleted": 0, "failed": 0, "errors": []}
     if len(ids) > 500:
         raise HTTPException(400, detail="too many ids (max 500)")

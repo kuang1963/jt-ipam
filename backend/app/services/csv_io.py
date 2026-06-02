@@ -101,7 +101,7 @@ def _strip_bom(text: str) -> str:
 
 def _detect_dialect(sample: str) -> csv.Dialect:
     try:
-        return csv.Sniffer().sniff(sample, delimiters=",;\t|")
+        return csv.Sniffer().sniff(sample, delimiters=",;\t|")  # type: ignore[return-value]
     except csv.Error:
         # fallback：預設 excel
         return csv.excel  # type: ignore[return-value]

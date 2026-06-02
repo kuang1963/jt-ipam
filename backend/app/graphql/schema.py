@@ -286,7 +286,7 @@ def _dict_device(r: DeviceModel) -> dict:  # type: ignore[type-arg]
 schema = strawberry.Schema(query=Query)
 
 
-async def _context_getter(
+async def _context_getter(  # type: ignore[no-untyped-def]
     user=Annotated[User, "from REST dep"],  # 由下方 dependency_overrides 取代
     session=Annotated[AsyncSession, "from REST dep"],
 ):  # pragma: no cover — 真正會被 GraphQLRouter 的 context_getter 替代
@@ -297,7 +297,7 @@ def make_graphql_router() -> GraphQLRouter:
     """組 GraphQL FastAPI router；context 內注入 RESTful 同樣的 user + session。"""
     from fastapi import Depends
 
-    async def _ctx(
+    async def _ctx(  # type: ignore[no-untyped-def]
         user: User = Depends(get_current_user),
         session: AsyncSession = Depends(get_session),
     ):

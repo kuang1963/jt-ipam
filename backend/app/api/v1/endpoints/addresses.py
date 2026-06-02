@@ -65,7 +65,7 @@ router = APIRouter(prefix="/addresses", tags=["addresses"])
 
 async def _require_subnet_perm(
     session: AsyncSession,
-    user,
+    user: User,
     subnet_id: uuid.UUID,
     required: str,
 ) -> Subnet:
@@ -176,7 +176,7 @@ async def list_addresses(
     scan_map: dict[uuid.UUID, bool] = {}
     if scan_ids:
         scan_map = dict(
-            (await session.execute(
+            (await session.execute(  # type: ignore[arg-type]
                 select(Subnet.id, Subnet.scan_enabled).where(Subnet.id.in_(scan_ids))
             )).all()
         )
@@ -232,7 +232,7 @@ async def get_address_relations(
     address_id: uuid.UUID,
     user: CurrentUser,
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> dict:
+) -> dict[str, Any]:
     """IP 的上下關係鏈：區段 → 子網路 → 位址 → 裝置 → 機櫃 → 機房。
     每個節點 {type,id,label,sub}；缺的環節省略。前端橫向串成關係圖。"""
     from app.models.device import Device
@@ -244,7 +244,7 @@ async def get_address_relations(
         raise HTTPException(status_code=404, detail="Address not found")
     await _require_subnet_perm(session, user, obj.subnet_id, "read")
 
-    chain: list[dict] = []
+    chain: list[dict[str, Any]] = []
     subnet = await session.get(Subnet, obj.subnet_id) if obj.subnet_id else None
     if subnet is not None and subnet.section_id:
         sec = await session.get(Section, subnet.section_id)

@@ -18,13 +18,14 @@ from app.api.phpipam.helpers import (
 from app.core.db import get_session
 from app.models.address import IPAddress
 from app.models.subnet import Subnet
+from app.models.user import User
 from app.services.permission import get_object_permission, has_permission
 from app.services.subnet import find_first_free_address
 
 router = APIRouter()
 
 
-async def _ensure_subnet_read(session: AsyncSession, user, subnet_id: uuid.UUID) -> Subnet:
+async def _ensure_subnet_read(session: AsyncSession, user: User, subnet_id: uuid.UUID) -> Subnet:
     s = await session.get(Subnet, subnet_id)
     if s is None:
         raise HTTPException(404, detail="Not found")
@@ -40,8 +41,8 @@ async def _ensure_subnet_read(session: AsyncSession, user, subnet_id: uuid.UUID)
 async def get_address(
     app_id: str,
     address_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     a = await session.get(IPAddress, address_id)
@@ -56,8 +57,8 @@ async def get_address_by_ip_subnet(
     app_id: str,
     ip: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     await _ensure_subnet_read(session, user, subnet_id)
@@ -78,8 +79,8 @@ async def get_address_by_ip_subnet(
 async def search_by_ip(
     app_id: str,
     ip: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     rows = list(
@@ -100,8 +101,8 @@ async def search_by_ip(
 async def search_by_hostname(
     app_id: str,
     hostname: str,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     rows = list(
@@ -125,8 +126,8 @@ async def search_by_hostname(
 async def first_free(
     app_id: str,
     subnet_id: uuid.UUID,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, Any]:
     started = time.perf_counter()
     s = await _ensure_subnet_read(session, user, subnet_id)
@@ -160,7 +161,7 @@ def _bool(v: object) -> bool:
     return False
 
 
-async def _require_subnet_write(session, user, subnet_id):  # type: ignore[no-untyped-def]
+async def _require_subnet_write(session: AsyncSession, user: User, subnet_id: uuid.UUID) -> Any:
     s = await session.get(Subnet, subnet_id)
     if s is None:
         raise HTTPException(404, detail="Subnet not found")
@@ -175,8 +176,8 @@ async def create_address(
     app_id: str,
     request: Request,
     payload: Annotated[dict[str, object], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     raw_subnet = payload.get("subnetId")
@@ -249,8 +250,8 @@ async def update_address(
     address_id: uuid.UUID,
     request: Request,
     payload: Annotated[dict[str, object], Body()],
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     a = await session.get(IPAddress, address_id)
@@ -294,8 +295,8 @@ async def delete_address(
     app_id: str,
     address_id: uuid.UUID,
     request: Request,
-    user=Depends(phpipam_current_user),
-    session: Annotated[AsyncSession, Depends(get_session)] = None,
+    user: Annotated[User, Depends(phpipam_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict[str, object]:
     started = time.perf_counter()
     a = await session.get(IPAddress, address_id)

@@ -198,7 +198,7 @@ async def list_vms(
             if nic.bridge and nic.bridge not in d["bridges"]:
                 d["bridges"].append(nic.bridge)
         for it in items:
-            d = by_vm.get(it.id)
+            d = by_vm.get(it.id)  # type: ignore[assignment]
             if d:
                 it.ips, it.macs, it.bridges = d["ips"], d["macs"], d["bridges"]
 

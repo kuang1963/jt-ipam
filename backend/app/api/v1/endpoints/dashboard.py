@@ -203,13 +203,13 @@ async def overview(
 
     section_heat: list[SectionHeat] = []
     for sid, bucket in sect_buckets.items():
-        sec = section_by_id.get(uuid.UUID(sid))
+        sec = section_by_id.get(uuid.UUID(sid))  # type: ignore[assignment]
         if sec is None:
             continue
         pct = round(bucket["used"] / bucket["total_hosts"] * 100, 2) if bucket["total_hosts"] else 0.0
         section_heat.append(SectionHeat(
             section_id=sid,
-            name=sec.name,
+            name=sec.name,  # type: ignore[attr-defined]
             subnet_count=bucket["subnet_count"],
             total_hosts=bucket["total_hosts"],
             used=bucket["used"],
