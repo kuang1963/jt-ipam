@@ -1,11 +1,8 @@
 <script setup lang="ts">
 /** 版本資訊（管理）：現行版本 + Python / 套件版本，並可檢查 GitHub 最新版。 */
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import {
-  NCard, NSpace, NIcon, NButton, NDescriptions, NDescriptionsItem, NTag,
-  NDataTable, NAlert, NSpin, useMessage, type DataTableColumns,
-} from "naive-ui";
+import { NCard, NSpace, NIcon, NButton, NSpin, NTag, useMessage } from "naive-ui";
 import { SettingsIcon, RefreshIcon } from "@/icons";
 import {
   getVersionInfo, checkLatestVersion, type VersionInfo, type LatestVersion,
@@ -19,14 +16,14 @@ const loading = ref(false);
 const latest = ref<LatestVersion | null>(null);
 const checking = ref(false);
 
-const pkgRows = ref<{ name: string; version: string }[]>([]);
+const pkgRows = computed(() =>
+  Object.entries(info.value?.packages ?? {})
+    .map(([name, version]) => ({ name, version: version ?? "—" })));
 
 async function load() {
   loading.value = true;
   try {
     info.value = await getVersionInfo();
-    pkgRows.value = Object.entries(info.value.packages)
-      .map(([name, version]) => ({ name, version: version ?? "—" }));
   } catch {
     msg.error(t("errors.network"));
   } finally {
@@ -47,11 +44,6 @@ async function check() {
   }
 }
 
-const pkgCols: DataTableColumns<{ name: string; version: string }> = [
-  { title: () => t("version.package"), key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
-  { title: () => t("version.installed"), key: "version" },
-];
-
 onMounted(load);
 </script>
 
@@ -65,35 +57,98 @@ onMounted(load);
     </template>
 
     <n-spin :show="loading">
-      <n-descriptions v-if="info" bordered :column="1" label-placement="left"
-                      label-style="width: 180px" style="margin-bottom: 16px">
-        <n-descriptions-item :label="t('version.current')">
-          <n-tag type="success" size="small">v{{ info.current }}</n-tag>
-        </n-descriptions-item>
-        <n-descriptions-item label="Python">{{ info.python }}</n-descriptions-item>
-      </n-descriptions>
+      <!-- 版本概覽 tiles -->
+      <div class="ver-tiles">
+        <div class="ver-tile ver-tile--accent">
+          <div class="ver-tile__label">{{ t("version.current") }}</div>
+          <div class="ver-tile__value">v{{ info?.current ?? "—" }}</div>
+        </div>
+        <div class="ver-tile">
+          <div class="ver-tile__label">Python</div>
+          <div class="ver-tile__value">{{ info?.python ?? "—" }}</div>
+        </div>
+        <div class="ver-tile ver-tile--action">
+          <div class="ver-tile__label">{{ t("version.check_latest") }}</div>
+          <n-space align="center" :size="10" style="margin-top: 6px">
+            <n-button size="small" type="primary" :loading="checking" @click="check">
+              <template #icon><n-icon><RefreshIcon /></n-icon></template>
+              {{ t("version.check_latest") }}
+            </n-button>
+            <template v-if="latest && !latest.error">
+              <n-tag v-if="latest.update_available" type="warning" size="small" round>
+                {{ t("version.update_available", { v: latest.latest }) }}
+              </n-tag>
+              <n-tag v-else type="success" size="small" round>{{ t("version.up_to_date") }}</n-tag>
+              <a :href="latest.release_url" target="_blank" rel="noopener" class="ver-link">{{ t("version.releases") }}</a>
+            </template>
+            <n-tag v-else-if="latest && latest.error" type="error" size="small" round>
+              {{ t("version.check_failed") }}
+            </n-tag>
+          </n-space>
+        </div>
+      </div>
 
-      <!-- 檢查最新版 -->
-      <n-space align="center" style="margin-bottom: 16px">
-        <n-button type="primary" :loading="checking" @click="check">
-          <template #icon><n-icon><RefreshIcon /></n-icon></template>
-          {{ t("version.check_latest") }}
-        </n-button>
-        <template v-if="latest && !latest.error">
-          <n-tag v-if="latest.update_available" type="warning">
-            {{ t("version.update_available", { v: latest.latest }) }}
-          </n-tag>
-          <n-tag v-else type="success">{{ t("version.up_to_date") }}</n-tag>
-          <a :href="latest.release_url" target="_blank" rel="noopener">{{ t("version.releases") }}</a>
-        </template>
-        <n-tag v-else-if="latest && latest.error" type="error">{{ t("version.check_failed") }}</n-tag>
-      </n-space>
-
-      <n-alert type="info" :bordered="false" style="margin-bottom: 12px">
-        {{ t("version.packages_hint") }}
-      </n-alert>
-      <n-data-table :columns="pkgCols" :data="pkgRows" size="small"
-                    :bordered="false" :pagination="false" />
+      <!-- 套件版本 -->
+      <div class="ver-pkg-head">
+        <span class="ver-pkg-title">{{ t("version.packages") }}</span>
+        <span class="ver-pkg-hint">{{ t("version.packages_hint") }}</span>
+      </div>
+      <div class="ver-pkg-grid">
+        <div v-for="p in pkgRows" :key="p.name" class="ver-pkg">
+          <span class="ver-pkg__name">{{ p.name }}</span>
+          <span class="ver-pkg__ver">{{ p.version }}</span>
+        </div>
+      </div>
     </n-spin>
   </n-card>
 </template>
+
+<style scoped>
+.ver-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.ver-tile {
+  border: 1px solid var(--n-border-color, rgba(128,128,128,.2));
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: rgba(128, 128, 128, 0.04);
+}
+.ver-tile--accent {
+  background: linear-gradient(135deg, rgba(24,160,88,.14), rgba(20,184,166,.10));
+  border-color: rgba(24,160,88,.35);
+}
+.ver-tile--action { grid-column: 1 / -1; }
+.ver-tile__label {
+  font-size: 12.5px; opacity: .7; letter-spacing: .3px; margin-bottom: 4px;
+}
+.ver-tile__value {
+  font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.ver-link { font-size: 13px; }
+
+.ver-pkg-head {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  margin: 4px 0 12px;
+}
+.ver-pkg-title { font-weight: 600; font-size: 15px; }
+.ver-pkg-hint { font-size: 12.5px; opacity: .6; }
+.ver-pkg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px 16px;
+}
+.ver-pkg {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 8px 12px;
+  border: 1px solid var(--n-border-color, rgba(128,128,128,.16));
+  border-radius: 9px;
+}
+.ver-pkg__name { font-size: 13.5px; opacity: .85; }
+.ver-pkg__ver {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px; font-weight: 600;
+}
+</style>

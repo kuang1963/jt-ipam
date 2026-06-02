@@ -392,10 +392,15 @@ onMounted(() => {
       <n-input v-model:value="q" clearable
                :placeholder="t('addresses.search_placeholder')"
                style="width: 260px" />
-      <n-checkbox :checked="exactMatch"
-                  @update:checked="(v: boolean) => { exactMatch = v; page = 1; refresh(); }">
-        {{ t("addresses.exact_match") }}
-      </n-checkbox>
+      <n-tooltip>
+        <template #trigger>
+          <n-checkbox :checked="exactMatch" :disabled="!q.trim()"
+                      @update:checked="(v: boolean) => { exactMatch = v; page = 1; refresh(); }">
+            {{ t("addresses.exact_match") }}
+          </n-checkbox>
+        </template>
+        {{ t("addresses.exact_match_hint") }}
+      </n-tooltip>
       <ColumnPicker
         :all="columnPickerItems"
         :visible="visibleKeys"
