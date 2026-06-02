@@ -129,6 +129,29 @@ async function runOuiLookup() {
   }
 }
 
+// ── OUI 前綴 / 廠商名搜尋（多筆）──
+const ouiSearchTerm = ref("");
+const ouiSearchBusy = ref(false);
+const ouiSearchRes = ref<{ count: number; truncated: boolean; vendors: { prefix: string; short_name: string | null; name: string }[] } | null>(null);
+async function runOuiSearch() {
+  const term = ouiSearchTerm.value.trim();
+  if (!term) return;
+  ouiSearchBusy.value = true;
+  try {
+    // 看起來像 hex 前綴(只含 0-9a-f:-) → 當 prefix；否則當廠商名
+    const isHex = /^[0-9a-fA-F:-]+$/.test(term);
+    const { data } = await apiClient.get("/api/v1/oui/search", {
+      params: isHex ? { prefix: term } : { name: term },
+    });
+    ouiSearchRes.value = data;
+  } catch (e: any) {
+    msg.error(e?.response?.data?.detail ?? "Error");
+    ouiSearchRes.value = null;
+  } finally {
+    ouiSearchBusy.value = false;
+  }
+}
+
 onMounted(() => { void loadOuiStats(); });
 
 // ── 網路小工具（多合一） ──
@@ -403,6 +426,24 @@ async function runEui64() {
                 <div v-if="ouiLookupResult !== null" style="margin-top: 10px">
                   {{ t('tools_page.oui_vendor_label') }}
                   <n-tag v-if="ouiLookupResult" type="success">{{ ouiLookupResult }}</n-tag>
+                  <n-tag v-else type="warning">{{ t('tools_page.oui_not_found') }}</n-tag>
+                </div>
+              </div>
+              <!-- 依前綴 / 廠商名搜尋多筆 -->
+              <div>
+                <div class="nu-row">
+                  <n-input v-model:value="ouiSearchTerm" :placeholder="t('tools_page.oui_search_ph')" @keyup.enter="runOuiSearch" />
+                  <n-button type="primary" class="nu-go" :loading="ouiSearchBusy" @click="runOuiSearch"><template #icon><n-icon><SearchIcon /></n-icon></template>{{ t('tools_page.lookup') }}</n-button>
+                </div>
+                <div v-if="ouiSearchRes" style="margin-top: 10px">
+                  <div style="margin-bottom:6px; font-size:12px; opacity:.75">
+                    {{ t('tools_page.oui_search_count', { n: ouiSearchRes.count }) }}<span v-if="ouiSearchRes.truncated"> +</span>
+                  </div>
+                  <n-descriptions v-if="ouiSearchRes.vendors.length" bordered :column="1" size="small" label-align="right">
+                    <n-descriptions-item v-for="v in ouiSearchRes.vendors" :key="v.prefix" :label="v.prefix">
+                      {{ v.name }}<span v-if="v.short_name && v.short_name !== v.name" style="opacity:.6"> ({{ v.short_name }})</span>
+                    </n-descriptions-item>
+                  </n-descriptions>
                   <n-tag v-else type="warning">{{ t('tools_page.oui_not_found') }}</n-tag>
                 </div>
               </div>

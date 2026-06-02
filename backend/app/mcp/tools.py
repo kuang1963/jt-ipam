@@ -579,6 +579,18 @@ async def oui_lookup(session: AsyncSession, *, user: User, mac: str) -> dict[str
     return {"mac": mac, "vendor": vendor}
 
 
+async def oui_search(
+    session: AsyncSession, *, user: User,
+    prefix: str | None = None, name: str | None = None, limit: int = 50,
+) -> dict[str, Any]:
+    """依 OUI 前綴或廠商名搜尋 OUI 登錄（多筆）。"""
+    from app.services.oui import search_oui_vendors
+    try:
+        return await search_oui_vendors(session, prefix=prefix, name=name, limit=limit)
+    except ValueError as exc:
+        raise IPAMToolError(str(exc)) from exc
+
+
 async def switch_port_for_ip(
     session: AsyncSession, *, user: User, ip: str,
 ) -> dict[str, Any]:
@@ -1489,9 +1501,22 @@ TOOLS: dict[str, dict[str, Any]] = {
     },
     "oui_lookup": {
         "fn": oui_lookup,
-        "description": "Look up the hardware vendor for a MAC address (OUI).",
+        "description": "Look up the hardware vendor for a single, complete MAC address (OUI).",
         "parameters": {"type": "object", "properties": {"mac": {"type": "string"}},
                        "required": ["mac"]},
+    },
+    "oui_search": {
+        "fn": oui_search,
+        "description": (
+            "Search the OUI registry for MULTIPLE vendors by partial MAC prefix and/or "
+            "vendor name. Use this for 'which vendors have a MAC starting with 22' "
+            "(prefix='22') or 'find Cisco OUIs' (name='Cisco'). Returns up to `limit` "
+            "matches. (oui_lookup is for one full MAC; this is for prefix/name search.)"
+        ),
+        "parameters": {"type": "object", "properties": {
+            "prefix": {"type": "string", "description": "partial OUI hex, e.g. '22', '00:11', '0011aa'"},
+            "name": {"type": "string", "description": "vendor name substring"},
+            "limit": {"type": "integer", "minimum": 1, "maximum": 500}}},
     },
     "allocate_ip": {
         "fn": allocate_ip,

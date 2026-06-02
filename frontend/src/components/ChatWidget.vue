@@ -25,7 +25,7 @@ import {
 } from "@/api/chat";
 import { fmtRelative, fmtDateTime } from "@/utils/datetime";
 import { BubbleStar } from "@iconoir/vue";
-import { CancelIcon, SendIcon } from "@/icons";
+import { CancelIcon, SendIcon, ChatHistoryIcon, ToolsIcon, RefreshIcon } from "@/icons";
 import { useAuthStore } from "@/stores/auth";
 import { renderMarkdown } from "@/utils/markdown";
 
@@ -246,14 +246,19 @@ async function removeConversation(id: string) {
         </n-space>
       </template>
       <template #header-extra>
-        <n-space>
-          <n-button text size="tiny" @click="toggleHistory">
-            {{ showHistory ? t("chat.hide_history") : t("chat.history") }}
+        <n-space class="chat-actions" :size="4" :wrap="false">
+          <n-button text size="tiny" :title="showHistory ? t('chat.hide_history') : t('chat.history')" @click="toggleHistory">
+            <template #icon><n-icon><ChatHistoryIcon /></n-icon></template>
+            <span class="chat-act-label">{{ showHistory ? t("chat.hide_history") : t("chat.history") }}</span>
           </n-button>
-          <n-button text size="tiny" @click="showTrace = !showTrace">
-            {{ showTrace ? t("chat.hide_trace") : t("chat.trace") }}
+          <n-button text size="tiny" :title="showTrace ? t('chat.hide_trace') : t('chat.trace')" @click="showTrace = !showTrace">
+            <template #icon><n-icon><ToolsIcon /></n-icon></template>
+            <span class="chat-act-label">{{ showTrace ? t("chat.hide_trace") : t("chat.trace") }}</span>
           </n-button>
-          <n-button text size="tiny" @click="reset">{{ t("chat.reset") }}</n-button>
+          <n-button text size="tiny" :title="t('chat.reset')" @click="reset">
+            <template #icon><n-icon><RefreshIcon /></n-icon></template>
+            <span class="chat-act-label">{{ t("chat.reset") }}</span>
+          </n-button>
           <n-button quaternary circle size="small" :title="t('common.cancel')" @click="open = false">
             <template #icon><n-icon :size="18"><CancelIcon /></n-icon></template>
           </n-button>
@@ -384,6 +389,14 @@ async function removeConversation(id: string) {
   background: var(--n-card-color, white);
   display: flex;
   flex-direction: column;
+  /* 讓 header 動作鈕能依「視窗實際寬度」決定要不要收成 icon */
+  container-type: inline-size;
+}
+/* 視窗夠寬：icon + 文字；視窗被壓窄（手機）→ 只留 icon，標題列才不會折行。
+   標籤藏起來時補一點按鈕內距，icon 才不會貼邊。 */
+@container (max-width: 430px) {
+  .chat-actions .chat-act-label { display: none; }
+  .chat-actions :deep(.n-button--text-type) { padding: 0 4px; }
 }
 .chat-input-row {
   display: flex;

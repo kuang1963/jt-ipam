@@ -900,7 +900,9 @@
     "cat_mac": "MAC / Vendor",
     "cat_dns": "DNS / Domain",
     "cat_power": "Datacenter / Power",
-    "subtitle": "Calculators & lookups for IP / subnet / MAC / DNS / power — all also available in the AI assistant"
+    "subtitle": "Calculators & lookups for IP / subnet / MAC / DNS / power — all also available in the AI assistant",
+    "oui_search_ph": "Search by prefix (22 / 00:11) or vendor name",
+    "oui_search_count": "{n} matches"
   },
   "dns_admin": {
     "title": "DNS Servers",

@@ -185,6 +185,51 @@ def mac_prefix(mac: str | None) -> str | None:
     return _normalize_mac_prefix(mac) if mac else None
 
 
+def _fmt_prefix(p: str) -> str:
+    """'00000C' → '00:00:0C'（顯示用）。"""
+    return ":".join(p[i:i + 2] for i in range(0, len(p), 2))
+
+
+async def search_oui_vendors(
+    session: AsyncSession,
+    *,
+    prefix: str | None = None,
+    name: str | None = None,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """依 OUI 前綴（如 '22' / '00:11' / '0011') 或廠商名子字串搜尋 OUI 登錄。
+
+    至少要給 prefix 或 name 其一。回傳 {count, truncated, vendors:[{prefix, name, short_name}]}。
+    """
+    limit = max(1, min(int(limit), 500))
+    stmt = select(OUIVendor.prefix, OUIVendor.short_name, OUIVendor.name)
+    conds: list[Any] = []
+    if prefix:
+        hex_only = re.sub(r"[^0-9A-Fa-f]", "", prefix).upper()
+        if not hex_only:
+            raise ValueError("prefix 需含至少一個 hex 字元")
+        conds.append(OUIVendor.prefix.like(f"{hex_only}%"))
+    if name:
+        like = f"%{name.strip()}%"
+        conds.append(OUIVendor.name.ilike(like) | OUIVendor.short_name.ilike(like))
+    if not conds:
+        raise ValueError("請提供 prefix 或 name 至少一項")
+    for c in conds:
+        stmt = stmt.where(c)
+    # 多抓一筆判斷是否被截斷
+    stmt = stmt.order_by(OUIVendor.prefix).limit(limit + 1)
+    rows = (await session.execute(stmt)).all()
+    truncated = len(rows) > limit
+    rows = rows[:limit]
+    return {
+        "count": len(rows),
+        "truncated": truncated,
+        "vendors": [
+            {"prefix": _fmt_prefix(r[0]), "short_name": r[1], "name": r[2]} for r in rows
+        ],
+    }
+
+
 async def stats(session: AsyncSession) -> dict[str, Any]:
     """OUI DB 統計 — count + last_updated。"""
     cnt = int(await session.scalar(select(func.count()).select_from(OUIVendor)) or 0)
