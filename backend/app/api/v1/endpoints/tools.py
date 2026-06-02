@@ -313,7 +313,7 @@ async def netmask_convert(
             net = ipaddress.ip_network(f"::/{v}", strict=False)
         else:                              # 純首碼長度
             plen = int(v)
-            base = "0.0.0.0" if plen <= 32 else "::"  # nosec B104 — 子網計算用字串，非 socket bind
+            base = "0.0.0.0" if plen <= 32 else "::"  # noqa: S104  # nosec B104 — 子網計算用字串，非 socket bind
             net = ipaddress.ip_network(f"{base}/{plen}", strict=False)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=f"無法解析遮罩/首碼：{exc}") from exc

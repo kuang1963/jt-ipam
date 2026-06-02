@@ -19,7 +19,7 @@ class TokenResponse(StrictModel):
 
     access_token: str | None = None
     refresh_token: str | None = None
-    token_type: str = "bearer"
+    token_type: str = "bearer"  # noqa: S105 — OAuth token_type 字面值，非密碼
     expires_in: int | None = None  # seconds
 
     # MFA 挑戰（僅 login 第一步成功且 user 有 TOTP 時設定）

@@ -118,9 +118,8 @@ jobs:
 
       - name: ruff lint
         working-directory: backend
-        # 已修掉假陽性（繁中全形標點）與真實問題；殘餘為既有風格/late-import 等，
-        # 與 mypy/pip-audit 一致先報告不阻擋，待逐步收斂。
-        run: .venv/bin/ruff check app/ || true
+        # 已收斂到 0（假陽性與既有風格走 ignore/per-file，真實問題已修）→ 正式阻擋。
+        run: .venv/bin/ruff check app/
 
       - name: mypy
         working-directory: backend

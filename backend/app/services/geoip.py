@@ -136,7 +136,7 @@ async def update_databases(session: AsyncSession) -> dict[str, Any]:
     cfg = await get_geoip_config(session)
     editions: list[str] = cfg["editions"]
     try:
-        DB_DIR.mkdir(parents=True, exist_ok=True)
+        DB_DIR.mkdir(parents=True, exist_ok=True)  # noqa: ASYNC240 — 一次性建目錄，可接受同步
     except OSError as exc:
         await _mark(session, error=f"mkdir {DB_DIR}: {exc}")
         return {"error": f"mkdir_failed: {exc}"}

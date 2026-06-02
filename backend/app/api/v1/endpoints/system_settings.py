@@ -521,13 +521,13 @@ async def list_ollama_models(
 
 
 # ─────────────────── RBAC：權限指派 ───────────────────
-import uuid as _uuid  # noqa: E402
-from typing import Literal as _Literal  # noqa: E402
+import uuid as _uuid
+from typing import Literal as _Literal
 
 from sqlalchemy import select as _select
 
-from app.models.permission import Permission as _Permission  # noqa: E402
-from app.models.user import Group as _Group  # noqa: E402
+from app.models.permission import Permission as _Permission
+from app.models.user import Group as _Group
 from app.models.user import User as _User
 
 _OBJ_TYPES = ("customer", "section", "subnet", "ip", "device", "rack", "location")
@@ -647,9 +647,9 @@ async def list_roles(
 
     from app.models.user import UserGroupMember as _UGM
     rows = (await session.execute(_select(_Group).order_by(_Group.name))).scalars().all()
-    counts = dict((gid, n) for gid, n in (await session.execute(
+    counts = {gid: n for gid, n in (await session.execute(
         _select(_UGM.group_id, _func.count()).group_by(_UGM.group_id)
-    )).all())
+    )).all()}
     return {"roles": [{
         "id": str(g.id), "name": g.name, "is_builtin": g.is_builtin,
         "member_count": int(counts.get(g.id, 0)),

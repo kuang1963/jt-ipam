@@ -765,7 +765,7 @@ async def sync_filter_rules(
         seen_uuids.add(ruuid)
 
         # OPNsense 回傳的欄位可能是 "1"/"0" 字串、或 {"value": "..."} 結構
-        def _v(field: str) -> str | None:
+        def _v(field: str, r: Any = r) -> str | None:   # r=r：綁定當前迴圈值（B023）
             x = r.get(field)
             if isinstance(x, dict):
                 # selected 結構：{"key": {"value": "...", "selected": 1}, ...} 取 selected=1 的 key

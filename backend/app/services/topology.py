@@ -46,7 +46,6 @@ async def build_topology(
 
     # RBAC：可見的 device / subnet id（None = 全部可見，admin/wildcard）
     vis_dev: set[uuid.UUID] | None = None
-    vis_sub: set[uuid.UUID] | None = None
     if user is not None and not getattr(user, "is_admin", False):
         from app.services.permission import visible_ids
         vis_dev = await visible_ids(session, user=user, object_type="device")

@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     rate_limit_default: str = "100/minute"
     rate_limit_auth: str = "10/minute"
-    rate_limit_api_token: str = "600/minute"
+    rate_limit_api_token: str = "600/minute"  # noqa: S105 — 限流字串，非密碼/令牌
     rate_limit_ai: str = "20/minute"   # LLM 推論昂貴，專屬較嚴格限流（防 DoS / 拖垮）
 
     # ── SSRF Allowlist (A10) ──

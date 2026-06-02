@@ -73,7 +73,7 @@ async def login_via_basic(
             request_id=getattr(request.state, "request_id", None),
         )
     except (InvalidCredentials, AccountLocked, AccountInactive):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials") from None
 
     # phpIPAM 風格 token = jt-ipam API token；30 天
     raw, prefix, digest = generate_api_token(env_label=app_id)

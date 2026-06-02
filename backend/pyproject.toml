@@ -119,11 +119,22 @@ ignore = [
     "RUF012",  # ORM/Pydantic model 的可變預設值（Mapped[list] 等）
     "S110",    # try/except/pass：best-effort 同步刻意吞錯（皆有註解說明）
     "C416",    # 解析式風格
+    # 命名：刻意沿用外部欄位 / SQLAlchemy model 名 / SNMP sysObjectID 等大小寫
+    "N803", "N806", "N811", "N814", "N815",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
 "alembic/**" = ["E402"]
+# 模型匯總模組：import 各 model 是為了註冊到 metadata（非未使用）
+"app/models/__init__.py" = ["F401"]
+# 這些檔有刻意的 late import（避免循環匯入 / 條件載入）
+"app/api/phpipam/endpoints/addresses.py" = ["E402"]
+"app/api/phpipam/endpoints/subnets.py" = ["E402"]
+"app/api/v1/endpoints/auth.py" = ["E402"]
+"app/api/v1/endpoints/migration.py" = ["E402"]
+"app/api/v1/endpoints/notifications.py" = ["E402"]
+"app/api/v1/endpoints/system_settings.py" = ["E402"]
 
 # ─────────────────────────────────────────────────────────
 # Mypy

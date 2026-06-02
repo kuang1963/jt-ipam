@@ -151,7 +151,7 @@ async def create_customer(
         await session.flush()
     except IntegrityError:
         await session.rollback()
-        raise HTTPException(409, detail="customer name already exists")
+        raise HTTPException(409, detail="customer name already exists") from None
     await append_audit(
         session,
         actor_user_id=str(user.id),
@@ -185,7 +185,7 @@ async def update_customer(
         await session.flush()
     except IntegrityError:
         await session.rollback()
-        raise HTTPException(409, detail="customer name already exists")
+        raise HTTPException(409, detail="customer name already exists") from None
     await append_audit(
         session,
         actor_user_id=str(user.id),
