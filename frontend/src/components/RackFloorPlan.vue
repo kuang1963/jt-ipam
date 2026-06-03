@@ -216,20 +216,20 @@ function boxHeight(r: Rack): number {
   const u = r.u_height || 42;
   return Math.round(34 + Math.min(60, u) * 0.9);
 }
-const BOX_BASE_W = 46;   // 平面圖機櫃方框基準寬（px）；只決定大小基準，形狀由長寬比決定
+const BOX_BASE_W = 46;   // 平面圖機櫃方框預設寬（px）
 function boxStyle(r: Rack) {
   const s: Record<string, string> = {
     left: (r.pos_x as number) * 100 + "%",
     top: (r.pos_y as number) * 100 + "%",
     transform: `translate(-50%, -50%) rotate(${r.pos_rot || 0}deg)`,
   };
-  // 形狀（長寬比）優先依機櫃「設定的寬度×深度」決定（俯視腳印 = 寬 : 深）；大小用固定基準，
-  // 不吃手動拉過的 pos_w/pos_h。沒設寬深時才退回：手動比例 → U 數估高。
+  // 寬度（大小）：手動拉過用 pos_w 比例，否則固定預設 → 大小可拖、可保留。
+  s.width = r.pos_w != null ? r.pos_w * 100 + "%" : BOX_BASE_W + "px";
+  // 形狀：有設定寬×深 → 用 CSS aspect-ratio 鎖定俯視腳印比例(寬:深)，高度自動由寬推得
+  //       （拖大小只改寬、形狀不變）。沒設寬深才退回手動 pos_h 或 U 數估高。
   if (r.width_mm && r.depth_mm) {
-    s.width = BOX_BASE_W + "px";
-    s.height = Math.round(BOX_BASE_W * (r.depth_mm / r.width_mm)) + "px";
+    s.aspectRatio = `${r.width_mm} / ${r.depth_mm}`;
   } else {
-    s.width = r.pos_w != null ? r.pos_w * 100 + "%" : BOX_BASE_W + "px";
     s.height = r.pos_h != null ? r.pos_h * 100 + "%" : boxHeight(r) + "px";
   }
   return s;

@@ -800,7 +800,8 @@
     "u_size": "U size",
     "device_count": "Devices",
     "seq": "Order",
-    "seq_ph": "Lower number sorts leftmost; blank goes last"
+    "seq_ph": "Lower number sorts leftmost; blank goes last",
+    "dimensions": "Width × Depth"
   },
   "requests": {
     "title": "IP Requests",

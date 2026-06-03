@@ -276,10 +276,24 @@ async def get_address_relations(
         # 沒有直接關聯裝置 → 若這個 IP 是某台 VM（Proxmox 整合）的位址，就補上
         # 「虛擬機」這一層；再透過 VM 的 PVE node 串到實體裝置 → 機櫃 → 機房。
         # 不是 VM 就沒有這一層。
-        from app.models.virt import VirtualMachine
+        from app.models.virt import VirtualMachine, VMInterface
+        ipstr = str(obj.ip).split("/")[0]
+        # 多重比對找出這個 IP 屬於哪台 VM（Proxmox 同步未必會設 primary_ip_id）：
+        # 1) VM 主要 IP 直接指向 → 2) VM 介面 IP 相符 → 3) VM 名稱 = 主機名稱
         vm = (await session.execute(
             select(VirtualMachine).where(VirtualMachine.primary_ip_id == obj.id).limit(1)
         )).scalar_one_or_none()
+        if vm is None:
+            vm = (await session.execute(
+                select(VirtualMachine)
+                .join(VMInterface, VMInterface.vm_id == VirtualMachine.id)
+                .where(func.host(VMInterface.primary_ip) == ipstr).limit(1)
+            )).scalar_one_or_none()
+        if vm is None and obj.hostname:
+            vm = (await session.execute(
+                select(VirtualMachine)
+                .where(func.lower(VirtualMachine.name) == obj.hostname.lower()).limit(1)
+            )).scalar_one_or_none()
         if vm is not None:
             chain.append({"type": "vm", "id": str(vm.id), "label": vm.name, "sub": vm.node})
             node_dev: Device | None = None

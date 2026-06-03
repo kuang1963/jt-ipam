@@ -800,7 +800,8 @@
     "u_size": "占用 U 數",
     "device_count": "裝置數",
     "seq": "編號",
-    "seq_ph": "數字小的排左邊；空白排最後"
+    "seq_ph": "數字小的排左邊；空白排最後",
+    "dimensions": "寬度 × 深度"
   },
   "requests": {
     "title": "IP 申請",

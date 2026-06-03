@@ -346,12 +346,15 @@ const cells = computed<Cell[]>(() => {
 /* 實體 19" rack 比例：寬 19" × 每 U 高 1.75" → 每 U 寬高比 ≈ 10.86 : 1。
    用 width 280px / U-row 28px 接近真實機櫃外觀 (18U 1:1.8、42U 1:4.2)。 */
 .rack-wrap { display: flex; align-items: flex-start; gap: 6px; margin-top: auto; }
+/* 左側 U 編號 gutter：頂端內距 = 機櫃框 border(2)+padding(4) = 6px，讓每個編號與
+   右側對應 U 列等高(28px)且垂直置中對齊。 */
 .u-gutter { display: flex; flex-direction: column; padding-top: 6px; flex: 0 0 auto; }
 .u-num-out {
   height: 28px;
-  line-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   width: 26px;
-  text-align: right;
   padding-right: 6px;
   font: bold 12px ui-monospace, SFMono-Regular, Menlo, monospace;
   color: rgba(127, 127, 127, 0.75);

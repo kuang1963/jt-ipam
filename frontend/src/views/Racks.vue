@@ -142,14 +142,15 @@ async function doBulkDelete() {
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "racks",
-  ["seq", "location_name", "name", "u_height", "device_count", "description"],
-  ["seq", "location_name", "name", "u_height", "device_count", "description"],
+  ["seq", "location_name", "name", "u_height", "dimensions", "device_count", "description"],
+  ["seq", "location_name", "name", "u_height", "dimensions", "device_count", "description"],
 );
 const columnPickerItems = [
   { key: "seq", label: t("racks.seq") },
   { key: "location_name", label: t("nav.locations") },
   { key: "name", label: t("cols.name") },
   { key: "u_height", label: t("cols.u_height") },
+  { key: "dimensions", label: t("racks.dimensions") },
   { key: "device_count", label: t("racks.device_count") },
   { key: "description", label: t("cols.description") },
 ];
@@ -172,6 +173,8 @@ const allColumns = computed<DataTableColumns<Rack>>(() => [
     sorter: (a, b) => ((a as any).location_name ?? "").localeCompare((b as any).location_name ?? "") },
   { title: t("common.name"), key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
   { title: t("racks.u_height"), key: "u_height", width: 100, sorter: (a, b) => a.u_height - b.u_height },
+  { title: t("racks.dimensions"), key: "dimensions", width: 140,
+    render: (r) => (r.width_mm && r.depth_mm) ? `${r.width_mm} × ${r.depth_mm} mm` : "—" },
   { title: t("racks.device_count"), key: "device_count", width: 100,
     render: (r) => (r as any).device_count ?? 0,
     sorter: (a, b) => ((a as any).device_count ?? 0) - ((b as any).device_count ?? 0) },
@@ -588,9 +591,15 @@ async function confirmPickDevice() {
 .rack-legend-shared {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   font-size: 11px;
-  margin-top: 4px;
+  margin-top: 10px;
+  /* 薄底色區塊，讓圖例不再孤零零地浮在底部 */
+  padding: 8px 12px;
+  border: 1px solid rgba(127, 127, 127, 0.18);
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.05);
 }
 .rack-legend-shared .legend-item {
   padding: 2px 8px;
