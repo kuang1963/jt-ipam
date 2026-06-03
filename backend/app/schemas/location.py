@@ -52,6 +52,7 @@ class RackBase(StrictModel):
     width_mm: Annotated[int | None, Field(ge=100, le=2000)] = None
     depth_mm: Annotated[int | None, Field(ge=100, le=3000)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    seq: Annotated[int | None, Field(ge=0, le=9999)] = None   # 排序編號（小的排左邊）
     numbering: RackNumbering = "top-down"
     face: RackFace = "front"
 
@@ -67,6 +68,7 @@ class RackUpdate(StrictModel):
     width_mm: Annotated[int | None, Field(ge=100, le=2000)] = None
     depth_mm: Annotated[int | None, Field(ge=100, le=3000)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    seq: Annotated[int | None, Field(ge=0, le=9999)] = None
     numbering: RackNumbering | None = None
     face: RackFace | None = None
     pos_x: Annotated[float | None, Field(ge=0, le=1)] = None
@@ -81,6 +83,7 @@ class RackRead(RackBase):
     pos_w: float | None = None
     pos_h: float | None = None
     device_count: int = 0    # 其下裝置數（清單顯示用）
+    location_name: str | None = None   # 所屬機房/地點名稱（清單顯示用）
     created_at: datetime
     updated_at: datetime
 

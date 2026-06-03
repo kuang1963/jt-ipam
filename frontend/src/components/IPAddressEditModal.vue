@@ -25,6 +25,7 @@ import { useRouter } from "vue-router";
 import { listDevices, type Device } from "@/api/basic";
 import { getAddressRelations, type RelationNode } from "@/api/relations";
 import RelationChain from "@/components/RelationChain.vue";
+import SwitchPortLabel from "@/components/SwitchPortLabel.vue";
 
 const router = useRouter();
 const { options: customerOptions, labelFor: customerLabelFor, ensureLoaded: ensureCustomersLoaded } = useCustomers();
@@ -397,11 +398,11 @@ async function remove() {
             <template v-if="props.address?.switch_port">
               <n-tooltip v-if="props.address?.switch_port_confident === false">
                 <template #trigger>
-                  <span style="color: var(--n-text-color-3, #888)">{{ props.address.switch_port }}</span>
+                  <switch-port-label :value="props.address.switch_port" dim />
                 </template>
                 {{ t("addresses.switch_port_uncertain") }}
               </n-tooltip>
-              <span v-else>{{ props.address.switch_port }}</span>
+              <switch-port-label v-else :value="props.address.switch_port" />
             </template>
             <span v-else>—</span>
             <n-tag v-if="switchPort?.likely_access_port?.port" size="tiny" type="info"

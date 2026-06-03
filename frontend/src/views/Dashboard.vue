@@ -343,7 +343,7 @@ onMounted(() => { void load(); void loadPins(); });
 }
 .hier-node {
   flex: 1 1 0;
-  min-width: 110px;
+  min-width: 76px;
   display: flex;
   flex-direction: column;
   gap: 4px;

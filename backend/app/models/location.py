@@ -37,6 +37,8 @@ class Rack(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     width_mm: Mapped[int | None] = mapped_column(Integer)
     depth_mm: Mapped[int | None] = mapped_column(Integer)
     description: Mapped[str | None] = mapped_column(Text)
+    # 排序編號：多機櫃並排顯示時，編號小的排左邊（同編號再依名稱）。null 視為很大、排最後。
+    seq: Mapped[int | None] = mapped_column(Integer, index=True)
     # U 編號方向：top-down＝最上面是最大 U（標準機櫃）；bottom-up＝最上面是 U1。
     numbering: Mapped[str] = mapped_column(
         String(16), default="top-down", server_default="top-down", nullable=False,

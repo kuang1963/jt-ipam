@@ -41,7 +41,10 @@ interface Rack {
   width_mm?: number | null;
   depth_mm?: number | null;
   location_id: string | null;
+  location_name?: string | null;
   description: string | null;
+  seq?: number | null;
+  device_count?: number;
   numbering?: "top-down" | "bottom-up";
   face?: "front" | "rear";
   pos_x?: number | null;
@@ -92,13 +95,17 @@ const locationOptions = computed(() =>
 async function loadRoom(locId: string) {
   roomLoading.value = true;
   try {
-    // 並排順序依機房平面圖相對位置（pos_x → pos_y）；未擺放的排最後
+    // 並排順序：先依「編號 seq」（小的在左、未設定排最後），再依平面圖位置(pos_x→pos_y)，最後依名稱
     const racksHere = rows.value
       .filter((r) => r.location_id === locId)
       .sort((a, b) => {
+        const as = a.seq ?? 9999, bs = b.seq ?? 9999;
+        if (as !== bs) return as - bs;
         const ax = a.pos_x ?? 99, bx = b.pos_x ?? 99;
         if (ax !== bx) return ax - bx;
-        return (a.pos_y ?? 99) - (b.pos_y ?? 99);
+        const ay = a.pos_y ?? 99, by = b.pos_y ?? 99;
+        if (ay !== by) return ay - by;
+        return a.name.localeCompare(b.name);
       });
     roomDiagrams.value = (await Promise.all(
       racksHere.map((r) => getRackDiagram(r.id).catch(() => null)),
@@ -135,10 +142,12 @@ async function doBulkDelete() {
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "racks",
-  ["name", "u_height", "device_count", "description"],
-  ["name", "u_height", "device_count", "description"],
+  ["seq", "location_name", "name", "u_height", "device_count", "description"],
+  ["seq", "location_name", "name", "u_height", "device_count", "description"],
 );
 const columnPickerItems = [
+  { key: "seq", label: t("racks.seq") },
+  { key: "location_name", label: t("nav.locations") },
   { key: "name", label: t("cols.name") },
   { key: "u_height", label: t("cols.u_height") },
   { key: "device_count", label: t("racks.device_count") },
@@ -155,6 +164,12 @@ function iconBtn(icon: any, label: string, onClick: () => void, type?: any) {
 }
 const allColumns = computed<DataTableColumns<Rack>>(() => [
   { type: "selection" },
+  { title: t("racks.seq"), key: "seq", width: 80,
+    render: (r) => (r as any).seq ?? "—",
+    sorter: (a, b) => ((a as any).seq ?? 9999) - ((b as any).seq ?? 9999) },
+  { title: t("nav.locations"), key: "location_name", width: 160,
+    render: (r) => (r as any).location_name ?? "—",
+    sorter: (a, b) => ((a as any).location_name ?? "").localeCompare((b as any).location_name ?? "") },
   { title: t("common.name"), key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
   { title: t("racks.u_height"), key: "u_height", width: 100, sorter: (a, b) => a.u_height - b.u_height },
   { title: t("racks.device_count"), key: "device_count", width: 100,
@@ -188,19 +203,21 @@ const showEdit = ref(false);
 const editing = ref<Rack | null>(null);
 const form = ref({
   name: "", u_height: 42, location_id: null as string | null, description: "",
+  seq: null as number | null,
   width_mm: null as number | null, depth_mm: null as number | null,
   numbering: "top-down" as "top-down" | "bottom-up", face: "front" as "front" | "rear",
 });
 function openCreate() {
   editing.value = null;
   form.value = { name: "", u_height: 42, location_id: roomId.value, description: "",
-    width_mm: null, depth_mm: null, numbering: "top-down", face: "front" };
+    seq: null, width_mm: null, depth_mm: null, numbering: "top-down", face: "front" };
   showEdit.value = true;
 }
 function openEdit(r: Rack) {
   editing.value = r;
   form.value = {
     name: r.name, u_height: r.u_height, location_id: r.location_id, description: r.description ?? "",
+    seq: r.seq ?? null,
     width_mm: r.width_mm ?? null, depth_mm: r.depth_mm ?? null,
     numbering: r.numbering ?? "top-down", face: r.face ?? "front",
   };
@@ -221,6 +238,7 @@ async function submitRack() {
     u_height: form.value.u_height,
     location_id: form.value.location_id ?? null,
     description: form.value.description.trim() || null,
+    seq: form.value.seq ?? null,
     width_mm: form.value.width_mm ?? null,
     depth_mm: form.value.depth_mm ?? null,
     numbering: form.value.numbering,
@@ -478,6 +496,10 @@ async function confirmPickDevice() {
         <n-form-item :label="t('racks.u_height')">
           <n-input-number v-model:value="form.u_height" :min="1" :max="99" style="width: 100%" />
         </n-form-item>
+        <n-form-item :label="t('racks.seq')">
+          <n-input-number v-model:value="form.seq" :min="0" :max="9999" clearable
+                          :placeholder="t('racks.seq_ph')" style="width: 100%" />
+        </n-form-item>
         <n-form-item :label="t('racks.width_mm')">
           <div class="dim-field">
             <n-input-number v-model:value="form.width_mm" :min="100" :max="2000" :step="50"
@@ -543,7 +565,7 @@ async function confirmPickDevice() {
       <n-space justify="end">
         <n-button @click="showDevicePick = false">{{ t("common.cancel") }}</n-button>
         <n-button type="primary" :disabled="!pickDeviceId" :loading="pickBusy" @click="confirmPickDevice">
-          {{ t("common.ok") }}
+          {{ t("common.confirm") }}
         </n-button>
       </n-space>
     </n-modal>
@@ -556,12 +578,12 @@ async function confirmPickDevice() {
   display: flex;
   flex-wrap: nowrap;
   gap: 16px;
-  align-items: flex-start;
+  align-items: stretch;   /* 卡片等高，搭配 U 格 margin-top:auto → 機櫃靠下對齊（落地） */
   overflow-x: auto;
   padding-bottom: 8px;
 }
 .rack-row > * { flex: 0 0 auto; }
-.rack-row :deep(.n-card) { width: auto; }
+.rack-row :deep(.n-card) { width: auto; height: 100%; }
 /* 整排機櫃共用的圖例 */
 .rack-legend-shared {
   display: flex;

@@ -344,7 +344,10 @@ async def list_racks(
     vis = await visible_ids(session, user=_user, object_type="rack")
     if vis is not None:
         stmt = stmt.where(Rack.id.in_(vis)); cstmt = cstmt.where(Rack.id.in_(vis))
-    stmt = stmt.order_by(Rack.name).offset((page - 1) * page_size).limit(page_size)
+    # 排序：編號 seq 小的在前（null 排最後），再依名稱
+    stmt = stmt.order_by(
+        Rack.seq.is_(None), Rack.seq, Rack.name,
+    ).offset((page - 1) * page_size).limit(page_size)
     rows = list((await session.execute(stmt)).scalars().all())
     total = int(await session.scalar(cstmt) or 0)
     # 每櫃裝置數
@@ -357,10 +360,19 @@ async def list_racks(
             .group_by(Device.rack_id)
         )).all():
             dev_counts[rid] = int(cnt)
+    # 所屬機房/地點名稱
+    loc_names: dict[uuid.UUID, str] = {}
+    loc_ids = [r.location_id for r in rows if r.location_id]
+    if loc_ids:
+        for lid, lname in (await session.execute(
+            select(Location.id, Location.name).where(Location.id.in_(loc_ids))
+        )).all():
+            loc_names[lid] = lname
     items = []
     for r in rows:
         m = RackRead.model_validate(r)
         m.device_count = dev_counts.get(r.id, 0)
+        m.location_name = loc_names.get(r.location_id) if r.location_id else None
         items.append(m)
     return Paginated[RackRead](
         items=items, total=total, page=page, page_size=page_size,

@@ -36,7 +36,12 @@ export interface Rack {
   width_mm: number | null;
   depth_mm: number | null;
   location_id: string | null;
+  location_name?: string | null;
   description: string | null;
+  seq?: number | null;
+  device_count?: number;
+  numbering?: "top-down" | "bottom-up";
+  face?: "front" | "rear";
   pos_x: number | null;
   pos_y: number | null;
   pos_rot: number;

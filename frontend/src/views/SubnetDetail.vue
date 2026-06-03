@@ -38,6 +38,7 @@ import { useCustomers } from "@/composables/useCustomers";
 import { usePinnedSubnets } from "@/composables/usePinnedSubnets";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 import ColumnPicker from "@/components/ColumnPicker.vue";
+import SwitchPortLabel from "@/components/SwitchPortLabel.vue";
 const { t } = useI18n();
 
 const { labelFor: customerLabelFor, options: customerOptions, ensureLoaded: ensureCustomersLoaded } = useCustomers();
@@ -333,9 +334,9 @@ const allIpColumns = computed<DataTableColumns<IPAddress>>(() => autoSort([
     render: (r) => !r.switch_port ? ""
       : (r.switch_port_confident === false
           ? h(NTooltip, null, {
-              trigger: () => h("span", { style: "color: var(--n-text-color-3, #888)" }, r.switch_port ?? ""),
+              trigger: () => h(SwitchPortLabel, { value: r.switch_port, dim: true }),
               default: () => t("addresses.switch_port_uncertain") })
-          : r.switch_port) },
+          : h(SwitchPortLabel, { value: r.switch_port })) },
   { title: t("common.description"), key: "description", width: 200,
     ellipsis: { tooltip: true }, render: (r) => r.description ?? "" },
   { title: t("addresses.last_seen"), key: "last_seen", width: 170, render: (r) => lastSeen(r) },
