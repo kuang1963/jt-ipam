@@ -381,7 +381,7 @@ async function confirmPickDevice() {
       <template #header>
         <n-space align="center" :wrap-item="false">
           <n-icon :size="22"><RacksIcon /></n-icon>
-          <span>{{ t("nav.racks") }}</span>
+          <span>{{ t("racks.page_title") }}</span>
         </n-space>
       </template>
       <n-space align="center">

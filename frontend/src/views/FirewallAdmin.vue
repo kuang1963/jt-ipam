@@ -213,6 +213,11 @@ async function refresh() {
     const [f, m] = await Promise.all([listFirewalls(200, 0), listAliasMappings()]);
     fws.value = f.items;
     mappings.value = m.items;
+    // 自動選第一台防火牆，別名 / 規則分頁不必再手動選就有資料
+    if (f.items.length) {
+      if (!aliasesFw.value) { aliasesFw.value = f.items[0].id; void loadAliases(); }
+      if (!rulesFw.value) { rulesFw.value = f.items[0].id; void loadRules(); }
+    }
   } catch { msg.error(t("errors.network")); }
   finally { loading.value = false; }
 }

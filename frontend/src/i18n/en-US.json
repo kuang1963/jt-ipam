@@ -802,7 +802,8 @@
     "device_count": "Devices",
     "seq": "Order",
     "seq_ph": "Lower number sorts leftmost; blank goes last",
-    "dimensions": "Width × Depth"
+    "dimensions": "Width × Depth",
+    "page_title": "Rooms / Racks"
   },
   "requests": {
     "title": "IP Requests",

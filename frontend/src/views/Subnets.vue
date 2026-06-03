@@ -67,6 +67,10 @@ const vrfs = ref<VRF[]>([]);
 const sectionOpts = computed(() => sections.value.map((s) => ({ label: s.name, value: s.id })));
 const vlanOpts = computed(() => vlans.value.map((v) => ({ label: `${v.number} · ${v.name}`, value: v.id })));
 const vrfOpts = computed(() => vrfs.value.map((v) => ({ label: v.rd ? `${v.name} (${v.rd})` : v.name, value: v.id })));
+// 上層子網路選項：所有子網路，排除自己
+const masterOptions = computed(() => flatRows.value
+  .filter((s) => s.id !== editing.value?.id)
+  .map((s) => ({ label: s.description ? `${s.cidr} (${s.description})` : s.cidr, value: s.id })));
 
 const showEdit = ref(false);
 const editing = ref<Subnet | null>(null);
@@ -76,6 +80,7 @@ const form = ref({
   description: "",
   vlan_id: null as string | null,
   vrf_id: null as string | null,
+  master_subnet_id: null as string | null,
   customer_id: null as string | null,
   is_pool: false,
   is_full: false,
@@ -123,7 +128,7 @@ function openCreate() {
     section_id: sections.value[0]?.id ?? "",
     cidr: "",
     description: "",
-    vlan_id: null, vrf_id: null, customer_id: null,
+    vlan_id: null, vrf_id: null, master_subnet_id: null, customer_id: null,
     is_pool: false, is_full: false,
     scan_enabled: false, scan_method: ["icmp"],
     threshold_pct: null,
@@ -142,6 +147,7 @@ function openEdit(r: Subnet) {
     description: r.description ?? "",
     vlan_id: r.vlan_id,
     vrf_id: r.vrf_id,
+    master_subnet_id: (r as any).master_subnet_id ?? null,
     customer_id: r.customer_id ?? null,
     is_pool: r.is_pool, is_full: r.is_full,
     scan_enabled: r.scan_enabled,
@@ -167,6 +173,7 @@ async function submit() {
         description: form.value.description.trim() || null,
         vlan_id: form.value.vlan_id ?? null,
         vrf_id: form.value.vrf_id ?? null,
+        master_subnet_id: form.value.master_subnet_id ?? null,
         customer_id: form.value.customer_id ?? null,
         is_pool: form.value.is_pool,
         is_full: form.value.is_full,
@@ -549,6 +556,10 @@ onMounted(() => {
         </n-form-item>
         <n-form-item label="VRF">
           <n-select v-model:value="form.vrf_id" :options="vrfOpts" clearable filterable />
+        </n-form-item>
+        <n-form-item v-if="editing" :label="t('subnets.master')">
+          <n-select v-model:value="form.master_subnet_id" :options="masterOptions"
+                    :placeholder="t('common.not_specified')" clearable filterable />
         </n-form-item>
         <n-form-item :label="t('cols.unit')">
           <n-select v-model:value="form.customer_id" :options="customerOptions"

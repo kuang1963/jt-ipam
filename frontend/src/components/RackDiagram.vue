@@ -11,7 +11,7 @@
 import { computed, ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import { NCard, NTag, NEmpty, NAlert, NSpace, NTooltip, NButton, NIcon, NDropdown } from "naive-ui";
+import { NCard, NEmpty, NAlert, NSpace, NTooltip, NButton, NIcon, NDropdown } from "naive-ui";
 import type { RackDiagram } from "@/api/racks";
 import { rackTypeColor as colorFor } from "@/utils/rackColors";
 import { ExportIcon } from "@/icons";
@@ -300,9 +300,6 @@ const cells = computed<Cell[]>(() => {
                 >
                   <template v-if="cell.device.is_mid">
                     <span class="d-name">{{ cell.device.name }}</span>
-                    <n-tag size="tiny" :bordered="false" style="margin-left: 6px">
-                      {{ cell.device.type }}
-                    </n-tag>
                   </template>
                 </div>
               </template>

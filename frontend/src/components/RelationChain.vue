@@ -69,8 +69,8 @@ function go(n: RelationNode) {
       v-for="(n, i) in nodes" :key="n.type + n.id"
       class="rel-seg" :ref="(el) => setSeg(el, i)"
     >
-      <span v-if="i > 0 && newline[i]" class="rel-arrow rel-wrap">↳</span>
-      <span v-else-if="i > 0" class="rel-arrow">→</span>
+      <!-- 每格前面都放一個往右箭頭（換行後第一格也有 → 在左邊）；第一格除外 -->
+      <span v-if="i > 0" class="rel-arrow">→</span>
       <div
         class="rel-node" :class="{ current: n.id === currentId, [n.type]: true }"
         :title="TYPE_LABEL[n.type]"
@@ -83,6 +83,8 @@ function go(n: RelationNode) {
         <div class="rel-label">{{ n.label }}</div>
         <div v-if="n.sub" class="rel-sub">{{ n.sub }}</div>
       </div>
+      <!-- 下一格要換行時，本格（該列最右）右邊也放一個往右箭頭 -->
+      <span v-if="newline[i + 1]" class="rel-arrow">→</span>
     </div>
   </div>
 </template>

@@ -177,8 +177,8 @@ onMounted(() => {
       </n-space>
     </template>
     <template #header-extra>
-      <n-space>
-        <n-checkbox v-model:checked="showMine" @update:checked="refresh">
+      <n-space align="center">
+        <n-checkbox v-model:checked="showMine" style="align-self: center" @update:checked="refresh">
           {{ t("requests.only_mine") }}
         </n-checkbox>
         <n-select
@@ -220,7 +220,7 @@ onMounted(() => {
     style="width: 520px"
   >
     <n-form>
-      <n-form-item label="Subnet" required>
+      <n-form-item :label="t('nav.subnets')" required>
         <n-select
           v-model:value="form.subnet_id"
           :options="subnetOptions"

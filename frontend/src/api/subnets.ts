@@ -77,6 +77,7 @@ export interface SubnetUpdate {
   description?: string | null;
   vlan_id?: string | null;
   vrf_id?: string | null;
+  master_subnet_id?: string | null;
   is_pool?: boolean | null;
   is_full?: boolean | null;
   scan_enabled?: boolean | null;

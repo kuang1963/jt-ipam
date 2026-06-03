@@ -178,6 +178,15 @@ function navigateTo(value: string) {
   hits.value = [];
 }
 
+// 鍵盤 Enter：若 naive 已對被選取的項目觸發 @select（navigateTo 會清空 hits），這裡看到
+// hits 已空就不重複動作；否則（沒選到任何項目）就帶去最相關的第一筆結果。
+function onEnter() {
+  if (hits.value.length) {
+    const h = hits.value[0];
+    navigateTo(`${h.type}:${h.id}`);
+  }
+}
+
 function detectedTagType(d: string): "info" | "success" | "warning" | "default" {
   if (d === "cidr" || d === "ip") return "success";
   if (d === "mac") return "info";
@@ -199,6 +208,7 @@ function detectedTagType(d: string): "info" | "success" | "warning" | "default" 
       :get-show="() => q.trim().length >= 2"
       class="global-search__input"
       @select="(v: string) => navigateTo(v)"
+      @keyup.enter="onEnter"
     />
     <n-tag
       v-if="detected && detected !== 'free' && detected !== 'empty'"
