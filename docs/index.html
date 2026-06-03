@@ -70,6 +70,10 @@
     background:rgba(24,160,88,.12);flex:0 0 auto}
   .badge{width:34px;height:34px;border-radius:9px;display:inline-grid;place-items:center;font-weight:800;color:#fff;
     background:linear-gradient(135deg,var(--green),var(--teal));flex:0 0 auto}
+  .hub-wrap{margin:0 0 26px}
+  .hub-svg{width:100%;max-width:760px;height:auto;display:block;margin:0 auto}
+  .hub-node text{paint-order:stroke}
+  .hub-cap{text-align:center;font-size:13px;opacity:.7;margin:6px 0 0}
   .integrations{display:flex;flex-wrap:wrap;gap:10px}
   .chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
     border-radius:10px;padding:9px 14px;font-weight:600;color:var(--ink);font-size:14px}
@@ -166,10 +170,10 @@
     <div class="grid g3">
       <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="zh">區段 / 子網路 / IP</span><span class="en">Sections / Subnets / IPs</span></h3><p><span class="zh">階層式管理、使用率視覺化、重疊網段偵測、CSV 匯入與通用表格匯出。</span><span class="en">Hierarchical management, usage visualization, overlap detection, CSV import & universal table export.</span></p></div>
       <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7.6 8.4 11 16M16.4 8.4 13 16M8 7h8"/></svg></span><span class="zh">IP 拓樸圖</span><span class="en">IP topology</span></h3><p><span class="zh">多訊號自動推導 device↔subnet 鄰接，畫出實體 / 無線 / VPN / L3 連線。</span><span class="en">Multi-signal device↔subnet adjacency, drawing physical / wireless / VPN / L3 links.</span></p></div>
-      <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg></span><span class="zh">裝置 / 機櫃 / 機房</span><span class="en">Devices / Racks / Rooms</span></h3><p><span class="zh">機櫃 U 位示意圖、機房平面圖拖拉定位、世界地圖標記、SVG/PNG/draw.io 匯出。</span><span class="en">Rack U-diagrams, floor-plan drag placement, world map, SVG/PNG/draw.io export.</span></p></div>
+      <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="1"/><rect x="3" y="14" width="18" height="6" rx="1"/><path d="M7 7h.01M7 17h.01"/></svg></span><span class="zh">裝置 / 機櫃 / 機房</span><span class="en">Devices / Racks / Rooms</span></h3><p><span class="zh">機櫃 U 位示意圖（含半 U、前後雙面）、機房平面圖拖拉定位、世界地圖標記、SVG/PNG/draw.io 匯出；裝置詳情直接標出本機在機櫃的位置。</span><span class="en">Rack U-diagrams (half-U &amp; front/rear), floor-plan drag placement, world map, SVG/PNG/draw.io export; device page highlights its own rack position.</span></p></div>
       <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><span class="zh">全域搜尋</span><span class="en">Global search</span></h3><p><span class="zh">hostname / IP / CIDR / MAC 一處搜尋，OUI 廠商比對每月自動更新。</span><span class="en">Search hostname / IP / CIDR / MAC in one place; monthly OUI vendor refresh.</span></p></div>
       <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 8v8M8 6h6a2 2 0 0 1 2 2v2M8 18h6a2 2 0 0 0 2-2v-2"/></svg></span><span class="zh">NAT / VLAN / VRF</span><span class="en">NAT / VLAN / VRF</span></h3><p><span class="zh">對齊 OPNsense 的 NAT 規則、Circuit 頻寬、VLAN/VRF 與客戶/單位歸屬。</span><span class="en">OPNsense-aligned NAT, circuit bandwidth, VLAN/VRF and customer/tenant ownership.</span></p></div>
-      <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="zh">IP 異動記錄</span><span class="en">IP change log</span></h3><p><span class="zh">hostname 多來源優先序、逐欄人為編輯記錄、上線/離線判定。</span><span class="en">Multi-source hostname precedence, per-field edit log, liveness classification.</span></p></div>
+      <div class="card"><h3><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="zh">IP 異動記錄</span><span class="en">IP change log</span></h3><p><span class="zh">hostname 多來源優先序、逐欄人為編輯記錄、上線/離線判定、失聯 IP 篩選與批次回收。</span><span class="en">Multi-source hostname precedence, per-field edit log, liveness classification, stale-IP filtering &amp; bulk reclaim.</span></p></div>
     </div>
   </div>
 </section>
@@ -179,6 +183,44 @@
     <div class="sec-head">
       <h2><span class="zh">原生整合多套開源軟體</span><span class="en">Integrates many open-source tools</span></h2>
       <p><span class="zh">核心價值就是「整合」：把你既有的多套開源網路與安全軟體串成一個檢視中樞——集中檢視、單向 pull、不改動來源。並支援從 phpIPAM 匯入既有資料、平滑遷移。</span><span class="en">Integration is the core value: tie your existing open-source network & security tools into one hub — centralized, pull-only, non-invasive. Plus data import & smooth migration from phpIPAM.</span></p>
+    </div>
+    <div class="hub-wrap">
+      <svg class="hub-svg" viewBox="0 0 900 520" role="img"
+           aria-label="jt-ipam integration hub diagram" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="hubg" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#18a058"/><stop offset="100%" stop-color="#0d7a40"/>
+          </radialGradient>
+        </defs>
+        <!-- spokes -->
+        <g stroke-width="2" fill="none" opacity="0.5">
+          <line x1="450" y1="260" x2="150" y2="90"  stroke="#6366f1"/>
+          <line x1="450" y1="260" x2="450" y2="70"  stroke="#0ea5e9"/>
+          <line x1="450" y1="260" x2="750" y2="90"  stroke="#f59e0b"/>
+          <line x1="450" y1="260" x2="800" y2="260" stroke="#ec4899"/>
+          <line x1="450" y1="260" x2="750" y2="430" stroke="#8b5cf6"/>
+          <line x1="450" y1="260" x2="450" y2="450" stroke="#ef4444"/>
+          <line x1="450" y1="260" x2="150" y2="430" stroke="#14b8a6"/>
+          <line x1="450" y1="260" x2="100" y2="260" stroke="#f43f5e"/>
+        </g>
+        <!-- spoke nodes -->
+        <g class="hub-node" font-size="14" font-weight="600" text-anchor="middle">
+          <g transform="translate(150,90)"><rect x="-78" y="-22" width="156" height="44" rx="10" fill="#6366f1"/><text y="-2" fill="#fff">DNS</text><text y="14" fill="#fff" font-size="10" font-weight="400">PowerDNS·BIND9·Unbound·UCS·Win</text></g>
+          <g transform="translate(450,70)"><rect x="-60" y="-22" width="120" height="44" rx="10" fill="#0ea5e9"/><text y="3" fill="#fff">LibreNMS</text></g>
+          <g transform="translate(750,90)"><rect x="-66" y="-22" width="132" height="44" rx="10" fill="#f59e0b"/><text y="-2" fill="#fff">OPNsense</text><text y="14" fill="#fff" font-size="10" font-weight="400">alias·rule·NAT·DHCP·ARP</text></g>
+          <g transform="translate(800,260)"><rect x="-72" y="-22" width="144" height="44" rx="10" fill="#ec4899"/><text y="3" fill="#fff">AdGuard Home</text></g>
+          <g transform="translate(750,430)"><rect x="-66" y="-22" width="132" height="44" rx="10" fill="#8b5cf6"/><text y="3" fill="#fff">Proxmox VE</text></g>
+          <g transform="translate(450,450)"><rect x="-74" y="-22" width="148" height="44" rx="10" fill="#ef4444"/><text y="-2" fill="#fff">Ollama LLM</text><text y="14" fill="#fff" font-size="10" font-weight="400">on-prem · MCP</text></g>
+          <g transform="translate(150,430)"><rect x="-50" y="-22" width="100" height="44" rx="10" fill="#14b8a6"/><text y="3" fill="#fff">Wazuh</text></g>
+          <g transform="translate(100,260)"><rect x="-78" y="-22" width="156" height="44" rx="10" fill="#f43f5e"/><text y="-2" fill="#fff">phpIPAM</text><text y="14" fill="#fff" font-size="10" font-weight="400" font-style="italic">import / migration</text></g>
+        </g>
+        <!-- hub -->
+        <circle cx="450" cy="260" r="62" fill="url(#hubg)"/>
+        <text x="450" y="254" text-anchor="middle" fill="#fff" font-size="20" font-weight="800">jt-ipam</text>
+        <text x="450" y="276" text-anchor="middle" fill="#cfeede" font-size="11">IPAM hub</text>
+        <text x="450" y="291" text-anchor="middle" fill="#cfeede" font-size="10">pull-only · on-prem</text>
+      </svg>
+      <p class="hub-cap"><span class="zh">所有整合皆為單向 pull、不改動來源；資料集中在自家機房。</span><span class="en">All integrations are pull-only and non-invasive; data stays centralized on-prem.</span></p>
     </div>
     <div class="integrations">
       <span class="chip"><i></i>phpIPAM<span class="zh">（資料匯入 / 遷移）</span><span class="en"> (data import / migration)</span></span>
@@ -233,11 +275,11 @@
     </div>
     <h3 style="margin:20px 0 8px"><span class="zh">安裝（全新）</span><span class="en">Install (fresh)</span></h3>
     <pre><span class="c"># <span class="zh">一行完成：取得程式碼並安裝</span><span class="en">One line: clone &amp; install</span></span>
-git clone https://github.com/jasoncheng7115/jt-ipam.git &amp;&amp; cd jt-ipam &amp;&amp; sudo <span class="g">./scripts/jt-ipam.sh install</span></pre>
+sudo git clone https://github.com/jasoncheng7115/jt-ipam.git /opt/jt-ipam &amp;&amp; cd /opt/jt-ipam &amp;&amp; sudo <span class="g">bash scripts/jt-ipam.sh install</span></pre>
 
     <h3 style="margin:22px 0 8px"><span class="zh">升級</span><span class="en">Upgrade</span></h3>
-    <pre><span class="c"># <span class="zh">在專案目錄內</span><span class="en">From the project directory</span></span>
-git pull &amp;&amp; sudo <span class="g">./scripts/jt-ipam.sh upgrade</span></pre>
+    <pre><span class="c"># <span class="zh">於 /opt/jt-ipam</span><span class="en">In /opt/jt-ipam</span></span>
+cd /opt/jt-ipam &amp;&amp; sudo git pull &amp;&amp; sudo <span class="g">bash scripts/jt-ipam.sh upgrade</span></pre>
 
     <h3 style="margin:22px 0 8px"><span class="zh">移除</span><span class="en">Uninstall</span></h3>
     <pre>sudo <span class="g">./scripts/jt-ipam.sh uninstall</span></pre>
