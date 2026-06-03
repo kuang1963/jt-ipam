@@ -23,7 +23,9 @@ import {
 import ColumnPicker from "@/components/ColumnPicker.vue";
 import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
+import { useRoute } from "vue-router";
 const { t } = useI18n();
+const route = useRoute();
 
 const fwPrefs = useColumnPrefs("opnsense_fws",
   ["name", "api_url", "enabled", "verify_tls", "sync_dhcp", "sync_arp", "sync_openvpn", "sync_rules", "sync_nat", "last_sync_at", "actions"],
@@ -381,7 +383,19 @@ const mapCols = computed<DataTableColumns<OPNsenseAliasMapping>>(() =>
 const ruleCols = computed<DataTableColumns<OPNsenseRule>>(() =>
   allRuleCols.value.filter((c: any) => rulePrefs.visibleKeys.value.includes(c.key)));
 
-onMounted(() => { void refresh(); });
+onMounted(() => {
+  // 支援 ?tab=aliases&q=<alias> 直接帶到對應分頁並預填篩選（NAT 規則的 alias chip 連過來）
+  const qt = route.query.tab;
+  if (typeof qt === "string" && ["firewalls", "mappings", "rules", "aliases"].includes(qt)) {
+    tab.value = qt as typeof tab.value;
+  }
+  const qq = route.query.q;
+  if (typeof qq === "string" && qq) {
+    if (tab.value === "aliases") aliasFilterQ.value = qq;
+    else if (tab.value === "rules") ruleFilterQ.value = qq;
+  }
+  void refresh();
+});
 </script>
 
 <template>

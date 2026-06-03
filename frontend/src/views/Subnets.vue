@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { h, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import {
   NCard,
   NDataTable,
@@ -19,6 +19,7 @@ import {
   NInputNumber,
   NCheckbox,
   NSwitch,
+  NTag,
   useMessage,
   type DataTableColumns,
   type DataTableRowKey,
@@ -46,10 +47,13 @@ const checkedKeys = ref<DataTableRowKey[]>([]);
 const bulkBusy = ref(false);
 
 const router = useRouter();
+const route = useRoute();
 const links = useEntityLinks(router);
 
 const { t } = useI18n();
 const msg = useMessage();
+// 從某單位的「子網路數」點過來時，只顯示該單位的子網路（可清除）
+const customerFilter = ref<string | null>(null);
 const rows = ref<Subnet[]>([]);
 const usageMap = ref<Record<string, SubnetUsage>>({});
 const loading = ref(false);
@@ -263,6 +267,15 @@ const allColumns: DataTableColumns<Subnet> = [
     },
   },
   {
+    title: () => t("subnets.ip_total"),
+    key: "ip_total", width: 110,
+    sorter: (a, b) => (usageMap.value[a.id]?.total ?? 0) - (usageMap.value[b.id]?.total ?? 0),
+    render: (r) => {
+      const u = usageMap.value[r.id];
+      return u ? u.total.toLocaleString() : "—";
+    },
+  },
+  {
     title: () => t("nav.customers"),
     key: "customer_id", width: 160,
     ellipsis: { tooltip: true },
@@ -332,8 +345,8 @@ const allColumns: DataTableColumns<Subnet> = [
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "subnets",
-  ["pinned", "cidr", "description", "usage", "customer_id", "scan_enabled", "actions"],
-  ["pinned", "cidr", "description", "usage", "customer_id", "scan_enabled", "actions"],
+  ["pinned", "cidr", "description", "usage", "ip_total", "customer_id", "scan_enabled", "actions"],
+  ["pinned", "cidr", "description", "usage", "ip_total", "customer_id", "scan_enabled", "actions"],
 );
 const columns = computed<DataTableColumns<Subnet>>(() =>
   allColumns.filter((c: any) => c.type === "selection" || visibleKeys.value.includes(c.key)),
@@ -381,6 +394,11 @@ function buildTree(items: Subnet[]): any[] {
   return roots;
 }
 function applyView() {
+  if (customerFilter.value) {
+    // 單位篩選時走平面清單（巢狀樹過濾會破壞父子關係）
+    rows.value = flatRows.value.filter((s) => s.customer_id === customerFilter.value);
+    return;
+  }
   rows.value = treeMode.value ? buildTree(flatRows.value) : flatRows.value;
 }
 
@@ -413,7 +431,17 @@ async function refresh() {
 
 watch(treeMode, applyView);
 
+const customerFilterLabel = computed(() =>
+  customerFilter.value ? customerLabelFor(customerFilter.value) : "");
+function clearCustomerFilter() {
+  customerFilter.value = null;
+  void router.replace({ name: "subnets", query: {} });
+  applyView();
+}
+
 onMounted(() => {
+  const c = route.query.customer;
+  if (typeof c === "string" && c) customerFilter.value = c;
   void refresh();
   void ensureCustomersLoaded();
   void loadAuxOpts();
@@ -450,6 +478,11 @@ onMounted(() => {
         <template #icon><n-icon><ArchiveIcon /></n-icon></template>
         {{ showArchived ? t("subnets.exit_archive") : t("subnets.archive_area") }}
       </n-button>
+    </n-space>
+    <n-space v-if="customerFilter" align="center" style="margin-bottom: 8px">
+      <n-tag type="info" closable @close="clearCustomerFilter">
+        {{ t("nav.customers") }}：{{ customerFilterLabel }}
+      </n-tag>
     </n-space>
     <n-space v-if="checkedKeys.length" align="center" style="margin-bottom: 8px; padding: 8px 12px; background: rgba(127,127,127,0.08); border-radius: 6px;">
       <span>{{ t("common.selected_n", { n: checkedKeys.length }) }}</span>

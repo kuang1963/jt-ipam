@@ -22,8 +22,7 @@ const chainEl = ref<HTMLElement | null>(null);
 const segEls: HTMLElement[] = [];
 const newline = ref<boolean[]>([]);
 function setSeg(el: any, i: number) { if (el) segEls[i] = el as HTMLElement; }
-const wrapPaths = ref<{ d: string; tip: { x: number; y: number } }[]>([]);
-const svgSize = ref<{ w: number; h: number }>({ w: 0, h: 0 });
+// 只判斷「哪些格是換行後的第一格」→ 那一格前面改用 ↳ 接續符（取代原本易畫歪的 SVG 折線）
 function recompute() {
   const flags: boolean[] = [];
   for (let i = 0; i < segEls.length; i++) {
@@ -31,25 +30,6 @@ function recompute() {
       && segEls[i].offsetTop > segEls[i - 1].offsetTop + 4;
   }
   newline.value = flags;
-  // 換行處畫一條「折線」：從上一排最右往右→往下→往左→接到下一排最左
-  const box = chainEl.value;
-  const paths: { d: string; tip: { x: number; y: number } }[] = [];
-  if (box) {
-    svgSize.value = { w: box.scrollWidth, h: box.scrollHeight };
-    const br = box.getBoundingClientRect();
-    for (let i = 1; i < segEls.length; i++) {
-      if (!flags[i]) continue;
-      const prev = segEls[i - 1].getBoundingClientRect();
-      const cur = segEls[i].getBoundingClientRect();
-      // 從上一排最後一格「底部中央」往下 → 走兩排之間的空隙往左 → 進到下一排第一格「頂部中央」
-      const x1 = prev.left + prev.width / 2 - br.left, y1 = prev.bottom - br.top;
-      const x2 = cur.left + cur.width / 2 - br.left, y2 = cur.top - br.top;
-      const yg = (y1 + y2) / 2;
-      const d = `M ${x1} ${y1} V ${yg} H ${x2} V ${y2}`;
-      paths.push({ d, tip: { x: x2, y: y2 } });
-    }
-  }
-  wrapPaths.value = paths;
 }
 let ro: ResizeObserver | null = null;
 onMounted(() => {
@@ -85,17 +65,12 @@ function go(n: RelationNode) {
 
 <template>
   <div ref="chainEl" class="rel-chain">
-    <!-- 換行折線（從上一排最右接到下一排最左）的 SVG 疊層，不擋點擊 -->
-    <svg v-if="wrapPaths.length" class="rel-svg" :width="svgSize.w" :height="svgSize.h">
-      <path v-for="(p, k) in wrapPaths" :key="k" :d="p.d" class="rel-foldline" />
-      <path v-for="(p, k) in wrapPaths" :key="'a' + k" class="rel-foldhead"
-            :d="`M ${p.tip.x - 4} ${p.tip.y - 6} L ${p.tip.x} ${p.tip.y} L ${p.tip.x + 4} ${p.tip.y - 6}`" />
-    </svg>
     <div
       v-for="(n, i) in nodes" :key="n.type + n.id"
       class="rel-seg" :ref="(el) => setSeg(el, i)"
     >
-      <span v-if="i > 0 && !newline[i]" class="rel-arrow">→</span>
+      <span v-if="i > 0 && newline[i]" class="rel-arrow rel-wrap">↳</span>
+      <span v-else-if="i > 0" class="rel-arrow">→</span>
       <div
         class="rel-node" :class="{ current: n.id === currentId, [n.type]: true }"
         :title="TYPE_LABEL[n.type]"
@@ -121,9 +96,6 @@ function go(n: RelationNode) {
   row-gap: 10px;
 }
 .rel-chain { position: relative; }
-.rel-svg { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 0; }
-.rel-foldline { fill: none; stroke: var(--primary-color, #18a058); stroke-width: 1.6; stroke-dasharray: 4 3; }
-.rel-foldhead { fill: none; stroke: var(--primary-color, #18a058); stroke-width: 1.6; }
 .rel-seg { position: relative; display: inline-flex; align-items: stretch; gap: 6px; z-index: 1; }
 .rel-node {
   display: flex;
@@ -161,10 +133,9 @@ function go(n: RelationNode) {
   display: flex; align-items: center;
   color: var(--n-text-color-3, #999); font-size: 16px; user-select: none;
 }
-/* 換行接續：在「該排最後一格」右側放一個往下接的轉角箭頭（絕對定位、不佔版面，
-   所以不會影響換行計算），表示「從這排最右接到下一排最左」。 */
-.rel-arrow.wrap-down {
-  position: absolute; right: -16px; top: 0; bottom: 0;
-  color: var(--primary-color, #18a058); font-size: 20px; font-weight: 700;
+/* 換行後第一格前面的接續符：表示「從上一排接下來」，用品牌色 ↳ */
+.rel-arrow.rel-wrap {
+  color: var(--primary-color, #18a058); font-size: 18px; font-weight: 700;
+  align-self: center;
 }
 </style>

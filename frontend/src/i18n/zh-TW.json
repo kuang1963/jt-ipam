@@ -644,7 +644,8 @@
     "threshold_pct": "使用率門檻 (%)",
     "threshold_ph": "超過此百分比警示",
     "allow_overlap": "允許重疊",
-    "allow_overlap_hint": "允許與現有網段重疊（例如同 CIDR 但單位 / 地點不同）"
+    "allow_overlap_hint": "允許與現有網段重疊（例如同 CIDR 但單位 / 地點不同）",
+    "ip_total": "IP 總數"
   },
   "csv_import": {
     "title": "匯入 IP 清單 (CSV)",

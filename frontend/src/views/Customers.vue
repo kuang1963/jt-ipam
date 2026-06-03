@@ -7,6 +7,7 @@
  */
 import { computed, h, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import {
   NCard, NDataTable, NSpace, NIcon, NInput, NButton, NPopconfirm, NTooltip,
   NModal, NForm, NFormItem,
@@ -25,6 +26,7 @@ import ColumnPicker from "@/components/ColumnPicker.vue";
 import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
 const { t } = useI18n();
+const router = useRouter();
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "customers",
@@ -138,7 +140,14 @@ const allCols = computed<DataTableColumns<Customer>>(() => autoSort([
   { title: t("cols.name"), key: "name", minWidth: 160, ellipsis: { tooltip: true } },
   { title: t("cols.subnet"), key: "subnet_count", width: 104,
     sorter: (a: any, b: any) => (a.subnet_count ?? 0) - (b.subnet_count ?? 0),
-    render: (r: any) => r.subnet_count ?? 0 },
+    render: (r: any) => {
+      const n = r.subnet_count ?? 0;
+      if (!n) return 0;
+      return h("a", {
+        href: "#", class: "entity-link",
+        onClick: (e: MouseEvent) => { e.preventDefault(); router.push({ name: "subnets", query: { customer: r.id } }); },
+      }, n);
+    } },
   { title: t("cols.contact"), key: "contact", width: 120,
     ellipsis: { tooltip: true }, render: (r) => r.contact ?? "—" },
   { title: t("cols.email"), key: "email", minWidth: 150,

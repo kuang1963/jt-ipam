@@ -161,8 +161,15 @@ interface Props {
   diagram: RackDiagram | null;
   showLegend?: boolean;   // 多機櫃並排時可關掉，由頁面放一個共用圖例
   editable?: boolean;     // admin：點空 U 位可挑裝置放入
+  floorAlignTo?: number;  // 多機櫃並排時傳入該排最高 U 數 → 矮櫃頂端補空白，使底部(U1)靠下對齊
 }
-const props = withDefaults(defineProps<Props>(), { showLegend: true, editable: false });
+const props = withDefaults(defineProps<Props>(), { showLegend: true, editable: false, floorAlignTo: 0 });
+const U_PX = 28;   // 每個 U 列高度（與 .u-row / .u-num-out 一致）
+// 落地對齊：比該排最高櫃矮幾 U，就在頂端補幾 U 的空白
+const floorPad = computed(() => {
+  const u = props.diagram?.u_height ?? 0;
+  return props.floorAlignTo > u ? (props.floorAlignTo - u) * U_PX : 0;
+});
 const emit = defineEmits<{ (e: "pick-empty", u: number, rackId: string): void }>();
 const hoveredId = ref<string | null>(null);   // hover 某 U → 整台裝置點亮+框線
 
@@ -273,7 +280,7 @@ const cells = computed<Cell[]>(() => {
         :description="t('rack_diagram.empty')"
       />
 
-      <div v-else class="rack-wrap">
+      <div v-else class="rack-wrap" :style="floorPad ? { marginTop: floorPad + 'px' } : undefined">
         <!-- U 編號：機櫃框外左側 gutter -->
         <div class="u-gutter">
           <div v-for="cell in cells" :key="'g' + cell.u" class="u-num-out">{{ cell.u }}</div>
@@ -336,16 +343,9 @@ const cells = computed<Cell[]>(() => {
 /* 衝突清單：繁中可讀句子（取代原本的 JSON dump） */
 .conflict-list { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.7; }
 
-/* 多機櫃並排、卡片等高時：機櫃落地 → U 格往下靠齊（卡片頂端留白給矮櫃）。
-   margin-top:auto 在 flex column 內只有「卡片被拉高有多餘空間」時才把 U 格推到底，
-   單櫃顯示（卡片不被拉伸）時無作用。 */
-.rack-diagram-card { height: 100%; display: flex; flex-direction: column; }
-.rack-diagram-card :deep(.n-card__content) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.rack-diagram-card :deep(.n-card__content > .n-space) { flex: 1; }
-
-/* 實體 19" rack 比例：寬 19" × 每 U 高 1.75" → 每 U 寬高比 ≈ 10.86 : 1。
-   用 width 280px / U-row 28px 接近真實機櫃外觀 (18U 1:1.8、42U 1:4.2)。 */
-.rack-wrap { display: flex; align-items: flex-start; gap: 6px; margin-top: auto; }
+/* 多機櫃並排落地對齊：矮櫃由 floorPad（inline margin-top）在頂端補空白，使各櫃底部(U1)
+   對齊同一條地板線；補白後各櫃內容等高，卡片自然等高。 */
+.rack-wrap { display: flex; align-items: flex-start; gap: 6px; }
 /* 左側 U 編號 gutter：頂端內距 = 機櫃框 border(2)+padding(4) = 6px，讓每個編號與
    右側對應 U 列等高(28px)且垂直置中對齊。 */
 .u-gutter { display: flex; flex-direction: column; padding-top: 6px; flex: 0 0 auto; }

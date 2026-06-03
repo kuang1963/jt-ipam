@@ -644,7 +644,8 @@
     "threshold_pct": "Usage threshold (%)",
     "threshold_ph": "Alert above this percentage",
     "allow_overlap": "Allow overlap",
-    "allow_overlap_hint": "Allow overlapping an existing subnet (e.g. same CIDR but different unit / location)"
+    "allow_overlap_hint": "Allow overlapping an existing subnet (e.g. same CIDR but different unit / location)",
+    "ip_total": "Total IPs"
   },
   "csv_import": {
     "title": "Import addresses (CSV)",

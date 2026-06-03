@@ -407,7 +407,7 @@ async function remove() {
             <span v-else>—</span>
             <n-tag v-if="switchPort?.likely_access_port?.port" size="tiny" type="info"
                    style="margin-left: 6px">
-              FDB: {{ switchPort.likely_access_port.switch }} / {{ switchPort.likely_access_port.port }}
+              FDB: <switch-port-label :value="`${switchPort.likely_access_port.switch} / ${switchPort.likely_access_port.port}`" />
             </n-tag>
           </n-descriptions-item>
           <n-descriptions-item :label="t('nav.devices')" :span="2">

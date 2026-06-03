@@ -141,13 +141,13 @@ function ipLinkCell(ipId: string | null) {
   }, label);
 }
 
-// alias 參考 → 可點的 tag，導到防火牆頁（alias 對映）查看
+// alias 參考 → 可點的 tag，導到防火牆頁的「Aliases」分頁並以該名稱篩選（看 alias 成員內容）
 function aliasCell(name: string | null) {
   if (!name) return null;
   return h(NTag, {
     size: "small", type: "info", bordered: false, style: "cursor: pointer",
     title: t("nat.alias_goto"),
-    onClick: () => router.push({ name: "firewall" }),
+    onClick: () => router.push({ name: "firewall", query: { tab: "aliases", q: name } }),
   }, { default: () => `@${name}` });
 }
 

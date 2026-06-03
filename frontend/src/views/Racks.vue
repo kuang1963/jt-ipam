@@ -86,8 +86,16 @@ import { useTableQuickFilter } from "@/composables/useTableQuickFilter";
 const { query: filterQ, filtered: filteredRows } = useTableQuickFilter(rows);
 const pin = usePinned("racks");
 const locPin = usePinned("locations");   // 在「機房」頁釘選的常用機房
-const displayRows = computed(() => pin.sortPinnedFirst(filteredRows.value));
+const displayRows = computed(() => {
+  // 上面選了機房/地點時，「所有機櫃」表也只顯示該機房的機櫃
+  const base = roomId.value
+    ? filteredRows.value.filter((r) => r.location_id === roomId.value)
+    : filteredRows.value;
+  return pin.sortPinnedFirst(base);
+});
 const roomDiagrams = ref<RD[]>([]);
+// 同排機櫃最高 U 數 → 傳給每個機櫃圖做「落地靠下對齊」
+const maxRoomU = computed(() => roomDiagrams.value.reduce((m, d) => Math.max(m, d.u_height || 0), 0));
 const roomLoading = ref(false);
 const locationOptions = computed(() =>
   locations.value.map((l) => ({ label: l.name, value: l.id })));
@@ -425,7 +433,8 @@ async function confirmPickDevice() {
       <n-spin v-if="!roomFocus" :show="roomLoading">
         <div v-if="roomDiagrams.length" class="rack-row">
           <rack-diagram v-for="d in roomDiagrams" :key="d.rack_id" :diagram="d"
-                        :show-legend="false" :editable="isAdmin" @pick-empty="onPickEmpty" />
+                        :show-legend="false" :editable="isAdmin" :floor-align-to="maxRoomU"
+                        @pick-empty="onPickEmpty" />
         </div>
         <!-- 整排機櫃共用一個圖例（不用每櫃都重複） -->
         <div v-if="roomDiagrams.length" class="rack-legend-shared">
