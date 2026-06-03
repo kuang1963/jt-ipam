@@ -67,6 +67,39 @@ const kpiTiles = computed(() => [
   { key: "audit",     i18n: "kpi_audit_24h",      value: data.value?.audit_24h ?? 0,       color: "#f59e0b", icon: AuditIcon },      // amber
 ]);
 
+// ── 統計圖表（純 SVG/CSS，無圖表 lib）──
+const DEVICE_TYPE_COLOR: Record<string, string> = {
+  server: "#8b5cf6", switch: "#0ea5e9", router: "#6366f1", firewall: "#ef4444",
+  ap: "#14b8a6", storage: "#f59e0b", ipmi: "#ec4899", other: "#94a3b8",
+};
+const deviceTypes = computed(() => data.value?.device_types ?? []);
+const deviceTypeMax = computed(() => Math.max(1, ...deviceTypes.value.map((d) => d.count)));
+function deviceTypeColor(t: string) { return DEVICE_TYPE_COLOR[t] ?? "#94a3b8"; }
+
+const utilRanking = computed(() => (data.value?.top_full_subnets ?? []).slice(0, 8));
+
+const custResources = computed(() => data.value?.customer_resources ?? []);
+const custResMax = computed(() => Math.max(1, ...custResources.value.map((c) => c.subnets + c.devices + c.ips)));
+
+// 趨勢折線：把 14 天的 audit / ip_changes 轉成 SVG polyline points
+const trend = computed(() => data.value?.activity_trend ?? []);
+const trendMax = computed(() => Math.max(1, ...trend.value.flatMap((p) => [p.audit, p.ip_changes])));
+const TREND_W = 320, TREND_H = 90, TREND_PAD = 4;
+function trendPoints(key: "audit" | "ip_changes"): string {
+  const n = trend.value.length;
+  if (n < 2) return "";
+  const innerW = TREND_W - TREND_PAD * 2, innerH = TREND_H - TREND_PAD * 2;
+  return trend.value.map((p, i) => {
+    const x = TREND_PAD + (i / (n - 1)) * innerW;
+    const y = TREND_PAD + innerH - (p[key] / trendMax.value) * innerH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+}
+const trendTotals = computed(() => ({
+  audit: trend.value.reduce((a, p) => a + p.audit, 0),
+  ip: trend.value.reduce((a, p) => a + p.ip_changes, 0),
+}));
+
 // ── 上下關係鏈：機房 → 機櫃 → 裝置 → IP 位址 → 子網路 → 區段 ──
 // 每層放本系統該層物件總數；即使是 0 也照列，讓人看出完整層級與關聯。
 const hierLayers = computed(() => [
@@ -225,6 +258,74 @@ onMounted(() => { void load(); void loadPins(); });
         </n-card>
       </div>
 
+      <!-- 統計圖表 2×2 -->
+      <div class="chart-grid">
+        <!-- 裝置類型分布 -->
+        <n-card :title="t('dashboard.chart_device_types')" size="small">
+          <div v-if="!deviceTypes.length" class="chart-empty">{{ t("common.no_data") }}</div>
+          <div v-else class="hbars">
+            <div v-for="d in deviceTypes" :key="d.type" class="hbar-row" @click="go('devices')">
+              <span class="hbar-label">{{ d.type }}</span>
+              <div class="hbar-track">
+                <div class="hbar-fill" :style="{ width: (d.count / deviceTypeMax * 100) + '%', background: deviceTypeColor(d.type) }"></div>
+              </div>
+              <span class="hbar-val">{{ d.count }}</span>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- 子網路使用率排行 -->
+        <n-card :title="t('dashboard.chart_util_ranking')" size="small">
+          <div v-if="!utilRanking.length" class="chart-empty">{{ t("common.no_data") }}</div>
+          <div v-else class="hbars">
+            <div v-for="s in utilRanking" :key="s.subnet_id" class="hbar-row"
+                 @click="go('subnet-detail', { id: s.subnet_id })">
+              <span class="hbar-label mono">{{ s.cidr }}</span>
+              <div class="hbar-track">
+                <div class="hbar-fill" :style="{ width: s.used_pct + '%', background: usePctColor(s.used_pct) }"></div>
+              </div>
+              <span class="hbar-val">{{ s.used_pct }}%</span>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- 各單位資源占比 -->
+        <n-card :title="t('dashboard.chart_customer_res')" size="small">
+          <div v-if="!custResources.length" class="chart-empty">{{ t("common.no_data") }}</div>
+          <div v-else>
+            <div class="chart-legend">
+              <span><i style="background:#0ea5e9"></i>{{ t("nav.subnets") }}</span>
+              <span><i style="background:#8b5cf6"></i>{{ t("nav.devices") }}</span>
+              <span><i style="background:#22c55e"></i>IP</span>
+            </div>
+            <div class="hbars">
+              <div v-for="c in custResources" :key="c.customer_id ?? c.label" class="hbar-row" @click="go('customers')">
+                <span class="hbar-label">{{ c.label }}</span>
+                <div class="hbar-track stack">
+                  <div :style="{ width: (c.subnets / custResMax * 100) + '%', background: '#0ea5e9' }" :title="`${t('nav.subnets')}: ${c.subnets}`"></div>
+                  <div :style="{ width: (c.devices / custResMax * 100) + '%', background: '#8b5cf6' }" :title="`${t('nav.devices')}: ${c.devices}`"></div>
+                  <div :style="{ width: (c.ips / custResMax * 100) + '%', background: '#22c55e' }" :title="`IP: ${c.ips}`"></div>
+                </div>
+                <span class="hbar-val">{{ c.subnets + c.devices + c.ips }}</span>
+              </div>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- 近 14 日 稽核 / IP 異動 趨勢 -->
+        <n-card :title="t('dashboard.chart_activity_trend')" size="small">
+          <div class="chart-legend">
+            <span><i style="background:#f59e0b"></i>{{ t("dashboard.kpi_audit_24h") }} · {{ trendTotals.audit }}</span>
+            <span><i style="background:#0ea5e9"></i>{{ t("nav.ip_changes") }} · {{ trendTotals.ip }}</span>
+          </div>
+          <svg class="trend-svg" :viewBox="`0 0 ${TREND_W} ${TREND_H}`" preserveAspectRatio="none">
+            <polyline :points="trendPoints('audit')" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round" />
+            <polyline :points="trendPoints('ip_changes')" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linejoin="round" />
+          </svg>
+          <div class="trend-axis"><span>{{ trend[0]?.day?.slice(5) }}</span><span>{{ trend[trend.length - 1]?.day?.slice(5) }}</span></div>
+        </n-card>
+      </div>
+
       <!-- Pinned subnets(使用者釘選) -->
       <n-card v-if="data.pinned_subnets?.length" :title="t('dashboard.pinned_subnets')">
         <n-space vertical :size="8">
@@ -350,6 +451,26 @@ onMounted(() => { void load(); void loadPins(); });
 
 /* ── 關係圖（上下層物件）── */
 .hier-card { margin-bottom: 16px; }
+/* 統計圖表 */
+.chart-grid {
+  display: grid; gap: 12px; margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+.chart-empty { text-align: center; opacity: 0.5; font-size: 13px; padding: 20px 0; }
+.hbars { display: flex; flex-direction: column; gap: 7px; }
+.hbar-row { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.hbar-row:hover .hbar-track { filter: brightness(1.05); }
+.hbar-label { flex: 0 0 96px; max-width: 96px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar-label.mono { font-family: monospace; }
+.hbar-track { flex: 1 1 auto; height: 12px; border-radius: 6px; background: rgba(127,127,127,0.14); overflow: hidden; }
+.hbar-track.stack { display: flex; }
+.hbar-track.stack > div { height: 100%; }
+.hbar-fill { height: 100%; border-radius: 6px; transition: width .3s; }
+.hbar-val { flex: 0 0 auto; min-width: 40px; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; opacity: 0.75; }
+.chart-legend { display: flex; gap: 14px; font-size: 12px; opacity: 0.7; margin-bottom: 8px; flex-wrap: wrap; }
+.chart-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.trend-svg { width: 100%; height: 90px; display: block; }
+.trend-axis { display: flex; justify-content: space-between; font-size: 11px; opacity: 0.5; font-variant-numeric: tabular-nums; }
 .hier-chain {
   display: flex;
   align-items: stretch;

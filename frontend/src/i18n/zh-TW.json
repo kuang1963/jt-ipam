@@ -274,7 +274,11 @@
     "pinned_subnets": "常用子網路",
     "pinned_locations": "常用機房 / 地點",
     "pinned_racks": "常用機櫃",
-    "hierarchy_title": "關係圖（上下層物件)"
+    "hierarchy_title": "關係圖（上下層物件)",
+    "chart_device_types": "裝置類型分布",
+    "chart_util_ranking": "子網路使用率排行",
+    "chart_customer_res": "各單位資源占比",
+    "chart_activity_trend": "近 14 日 稽核 / IP 異動 趨勢"
   },
   "sections": {
     "title": "區段",

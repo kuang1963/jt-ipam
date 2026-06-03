@@ -62,6 +62,25 @@ class SectionHeat(StrictModel):
     used_pct: float
 
 
+class TypeCount(StrictModel):
+    type: str
+    count: int
+
+
+class CustomerResource(StrictModel):
+    customer_id: str | None
+    label: str
+    subnets: int
+    ips: int
+    devices: int
+
+
+class TrendPoint(StrictModel):
+    day: str          # YYYY-MM-DD
+    audit: int
+    ip_changes: int
+
+
 class DashboardOverview(StrictModel):
     sections: int
     subnets: int
@@ -79,6 +98,9 @@ class DashboardOverview(StrictModel):
     racks: int
     locations: int
     vms: int
+    device_types: list[TypeCount]        # 裝置類型分布
+    customer_resources: list[CustomerResource]   # 各單位資源占比
+    activity_trend: list[TrendPoint]     # 近 14 日 稽核 / IP 異動 趨勢
 
 
 @router.get("/overview", response_model=DashboardOverview)
@@ -240,6 +262,55 @@ async def overview(
     locations_n = int(await session.scalar(select(func.count()).select_from(Location)) or 0)
     vms_n = int(await session.scalar(select(func.count()).select_from(VirtualMachine)) or 0)
 
+    # ── 裝置類型分布 ──
+    dtype_rows = (
+        await session.execute(
+            select(Device.type, func.count()).group_by(Device.type)
+        )
+    ).all()
+    device_types = sorted(
+        [TypeCount(type=str(t or "other"), count=int(c)) for t, c in dtype_rows],
+        key=lambda x: x.count, reverse=True,
+    )
+
+    # ── 各單位資源占比（subnets / ips / devices）──
+    sub_by_cust = {str(r[0]): int(r[1]) for r in (await session.execute(
+        select(Subnet.customer_id, func.count()).where(Subnet.customer_id.is_not(None))
+        .group_by(Subnet.customer_id))).all()}
+    ip_by_cust = {str(r[0]): int(r[1]) for r in (await session.execute(
+        select(IPAddress.customer_id, func.count()).where(IPAddress.customer_id.is_not(None))
+        .group_by(IPAddress.customer_id))).all()}
+    dev_by_cust = {str(r[0]): int(r[1]) for r in (await session.execute(
+        select(Device.customer_id, func.count()).where(Device.customer_id.is_not(None))
+        .group_by(Device.customer_id))).all()}
+    cust_ids = set(sub_by_cust) | set(ip_by_cust) | set(dev_by_cust)
+    customer_resources = sorted(
+        [CustomerResource(
+            customer_id=cid,
+            label=cust_label.get(cid, cid[:8]),
+            subnets=sub_by_cust.get(cid, 0),
+            ips=ip_by_cust.get(cid, 0),
+            devices=dev_by_cust.get(cid, 0),
+        ) for cid in cust_ids],
+        key=lambda x: (x.ips + x.subnets + x.devices), reverse=True,
+    )[:10]
+
+    # ── 近 14 日 稽核 / IP 異動 趨勢 ──
+    from app.models.ip_change_log import IPChangeLog
+    day = func.date_trunc("day", AuditLog.ts)
+    audit_by_day = {str(r[0].date()): int(r[1]) for r in (await session.execute(
+        select(day, func.count()).where(AuditLog.ts >= datetime.now(UTC) - timedelta(days=14))
+        .group_by(day))).all()}
+    day2 = func.date_trunc("day", IPChangeLog.created_at)
+    ipc_by_day = {str(r[0].date()): int(r[1]) for r in (await session.execute(
+        select(day2, func.count()).where(IPChangeLog.created_at >= datetime.now(UTC) - timedelta(days=14))
+        .group_by(day2))).all()}
+    today = datetime.now(UTC).date()
+    activity_trend = []
+    for i in range(13, -1, -1):
+        d = (today - timedelta(days=i)).isoformat()
+        activity_trend.append(TrendPoint(day=d, audit=audit_by_day.get(d, 0), ip_changes=ipc_by_day.get(d, 0)))
+
     return DashboardOverview(
         sections=len(visible_sections),
         subnets=len(visible_subnets),
@@ -256,4 +327,7 @@ async def overview(
         racks=racks_n,
         locations=locations_n,
         vms=vms_n,
+        device_types=device_types,
+        customer_resources=customer_resources,
+        activity_trend=activity_trend,
     )

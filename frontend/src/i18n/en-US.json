@@ -274,7 +274,11 @@
     "pinned_subnets": "Pinned subnets",
     "pinned_locations": "Pinned rooms / locations",
     "pinned_racks": "Pinned racks",
-    "hierarchy_title": "Relationship (object hierarchy)"
+    "hierarchy_title": "Relationship (object hierarchy)",
+    "chart_device_types": "Device type distribution",
+    "chart_util_ranking": "Subnet utilization ranking",
+    "chart_customer_res": "Per-tenant resources",
+    "chart_activity_trend": "Audit / IP changes (14d)"
   },
   "sections": {
     "title": "Sections",
