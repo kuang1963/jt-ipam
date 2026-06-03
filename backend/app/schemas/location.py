@@ -17,6 +17,7 @@ class LocationBase(StrictModel):
     latitude: Annotated[float | None, Field(ge=-90, le=90)] = None
     longitude: Annotated[float | None, Field(ge=-180, le=180)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    customer_id: uuid.UUID | None = None   # 所屬單位
 
 
 class LocationCreate(LocationBase):
@@ -29,6 +30,7 @@ class LocationUpdate(StrictModel):
     latitude: Annotated[float | None, Field(ge=-90, le=90)] = None
     longitude: Annotated[float | None, Field(ge=-180, le=180)] = None
     description: Annotated[str | None, Field(max_length=1024)] = None
+    customer_id: uuid.UUID | None = None
 
 
 class LocationRead(LocationBase):
@@ -38,6 +40,7 @@ class LocationRead(LocationBase):
     updated_at: datetime
     rack_count: int = 0      # 其下機櫃數（清單顯示用）
     device_count: int = 0    # 其下裝置數（清單顯示用）
+    customer_name: str | None = None   # 所屬單位名稱（清單顯示用）
 
 
 RackNumbering = Literal["top-down", "bottom-up"]

@@ -283,6 +283,11 @@ const allColumns: DataTableColumns<Subnet> = [
     },
   },
   {
+    title: () => t("subnets.gateway"),
+    key: "gateway", width: 130,
+    render: (r) => (r as any).gateway ?? "—",
+  },
+  {
     title: () => t("nav.customers"),
     key: "customer_id", width: 160,
     ellipsis: { tooltip: true },
@@ -352,8 +357,8 @@ const allColumns: DataTableColumns<Subnet> = [
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "subnets",
-  ["pinned", "cidr", "description", "usage", "ip_total", "customer_id", "scan_enabled", "actions"],
-  ["pinned", "cidr", "description", "usage", "ip_total", "customer_id", "scan_enabled", "actions"],
+  ["pinned", "cidr", "description", "usage", "ip_total", "gateway", "customer_id", "scan_enabled", "actions"],
+  ["pinned", "cidr", "description", "usage", "ip_total", "gateway", "customer_id", "scan_enabled", "actions"],
 );
 const columns = computed<DataTableColumns<Subnet>>(() =>
   allColumns.filter((c: any) => c.type === "selection" || visibleKeys.value.includes(c.key)),
@@ -363,6 +368,7 @@ const columnPickerItems = computed(() => [
   { key: "cidr", label: "CIDR" },
   { key: "description", label: t("cols.description") },
   { key: "usage", label: t("cols.usage") },
+  { key: "gateway", label: t("subnets.gateway") },
   { key: "customer_id", label: t("cols.unit") },
   { key: "scan_enabled", label: t("cols.scan") },
   { key: "actions", label: t("cols.actions") },

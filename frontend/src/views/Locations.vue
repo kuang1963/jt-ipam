@@ -18,6 +18,7 @@ import LocationsMap from "@/components/LocationsMap.vue";
 import ColumnPicker from "@/components/ColumnPicker.vue";
 import ExportButton from "@/components/ExportButton.vue";
 import { useColumnPrefs } from "@/composables/useColumnPrefs";
+import { useCustomers } from "@/composables/useCustomers";
 import { uploadFloorplan, getFloorplanObjectURL, deleteFloorplan } from "@/api/racks";
 
 // ── 機房平面圖（在編輯既有機房時可上傳/檢視/移除；完整定位編輯在「機櫃」頁）──
@@ -46,6 +47,7 @@ async function removeFp() {
 }
 
 const { t } = useI18n();
+const { options: customerOptions, ensureLoaded: ensureCustomerOptsLoaded } = useCustomers();
 const msg = useMessage();
 const rows = ref<Location[]>([]);
 import { useTableQuickFilter } from "@/composables/useTableQuickFilter";
@@ -67,6 +69,7 @@ const editing = ref<Location | null>(null);
 const form = ref({
   name: "", address: "", description: "",
   latitude: null as number | null, longitude: null as number | null,
+  customer_id: null as string | null,
 });
 const checkedKeys = ref<DataTableRowKey[]>([]);
 const bulkBusy = ref(false);
@@ -105,7 +108,7 @@ async function refresh() {
 }
 function openCreate() {
   editing.value = null;
-  form.value = { name: "", address: "", description: "", latitude: null, longitude: null };
+  form.value = { name: "", address: "", description: "", latitude: null, longitude: null, customer_id: null };
   revokeFp(); fpHas.value = false;
   show.value = true;
 }
@@ -114,6 +117,7 @@ function openEdit(r: Location) {
   form.value = {
     name: r.name, address: r.address ?? "", description: r.description ?? "",
     latitude: r.latitude ?? null, longitude: r.longitude ?? null,
+    customer_id: (r as any).customer_id ?? null,
   };
   void loadFp(r.id);
   show.value = true;
@@ -126,6 +130,7 @@ async function submit() {
       description: form.value.description || undefined,
       latitude: form.value.latitude,
       longitude: form.value.longitude,
+      customer_id: form.value.customer_id ?? null,
     };
     if (editing.value) await updateLocation(editing.value.id, payload);
     else await createLocation(payload);
@@ -140,11 +145,12 @@ async function del(r: Location) {
 
 const { visibleKeys, setVisible, reset } = useColumnPrefs(
   "locations",
-  ["name", "address", "coords", "description", "rack_count", "device_count", "actions"],
-  ["name", "address", "coords", "description", "rack_count", "device_count", "actions"],
+  ["name", "customer_name", "address", "coords", "description", "rack_count", "device_count", "actions"],
+  ["name", "customer_name", "address", "coords", "description", "rack_count", "device_count", "actions"],
 );
 const columnPickerItems = computed(() => [
   { key: "name", label: t("cols.name") },
+  { key: "customer_name", label: t("cols.unit") },
   { key: "address", label: t("cols.address") },
   { key: "coords", label: t("cols.coords") },
   { key: "description", label: t("cols.description") },
@@ -163,6 +169,8 @@ function iconAction(icon: any, label: string, onClick: () => void, type?: any) {
 const allCols = computed<DataTableColumns<Location>>(() => [
   { type: "selection" },
   { title: t("common.name"), key: "name", minWidth: 180, ellipsis: { tooltip: true }, sorter: (a, b) => a.name.localeCompare(b.name) },
+  { title: t("cols.unit"), key: "customer_name", width: 160, ellipsis: { tooltip: true },
+    render: (r) => (r as any).customer_name ?? "—" },
   { title: t("cols.coords"), key: "coords", width: 160,
     render: (r) => (r.latitude != null && r.longitude != null) ? `${r.latitude}, ${r.longitude}` : "—" },
   { title: t("locations.address"), key: "address", minWidth: 200, ellipsis: { tooltip: true }, render: (r) => r.address ?? "—",
@@ -192,7 +200,11 @@ const allCols = computed<DataTableColumns<Location>>(() => [
 const cols = computed<DataTableColumns<Location>>(() =>
   allCols.value.filter((c: any) => c.type === "selection" || c.key === "actions" || visibleKeys.value.includes(c.key)),
 );
-onMounted(() => { void refresh(); getMapProvider().then((p) => { mapProvider.value = p; }); });
+onMounted(() => {
+  void refresh();
+  void ensureCustomerOptsLoaded();
+  getMapProvider().then((p) => { mapProvider.value = p; });
+});
 </script>
 
 <template>
@@ -247,6 +259,10 @@ onMounted(() => { void refresh(); getMapProvider().then((p) => { mapProvider.val
       </template>
       <n-form>
         <n-form-item :label="t('common.name')"><n-input v-model:value="form.name" /></n-form-item>
+        <n-form-item :label="t('cols.unit')">
+          <n-select v-model:value="form.customer_id" :options="customerOptions"
+                    :placeholder="t('common.not_specified')" clearable filterable />
+        </n-form-item>
         <n-form-item :label="t('locations.address')"><n-input v-model:value="form.address" /></n-form-item>
         <n-space :size="12">
           <n-form-item :label="t('locations.latitude')">

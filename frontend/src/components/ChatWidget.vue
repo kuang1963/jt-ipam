@@ -18,7 +18,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { useI18n } from "vue-i18n";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import {
   chatStream, listMyConversations, getConversation, deleteConversation, getModelInfo,
   type ChatMessage, type ChatPageContext, type ConversationSummary, type ModelInfo,
@@ -31,6 +31,7 @@ import { renderMarkdown } from "@/utils/markdown";
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const auth = useAuthStore();
 const userLabel = computed(() => auth.me?.username || "You");
 
@@ -45,7 +46,48 @@ const pageContext = computed<ChatPageContext>(() => {
 });
 
 // UI 端訊息：除了 role/content 還記每則回應的 model 與耗時（不回傳給後端）
-type UiMessage = ChatMessage & { model?: string | null; elapsedMs?: number | null; ts?: string | null };
+type ChatRef = { type: string; id: string; label: string };
+type UiMessage = ChatMessage & {
+  model?: string | null; elapsedMs?: number | null; ts?: string | null; refs?: ChatRef[];
+};
+
+// 從工具呼叫結果（trace）擷取被提到的物件 → 答案下方給可點連結
+function extractRefs(trace: ChatMessage[] | undefined): ChatRef[] {
+  const refs: ChatRef[] = [];
+  const seen = new Set<string>();
+  const add = (type: string, id: any, label: any) => {
+    if (!id || !label) return;
+    const k = `${type}:${id}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    refs.push({ type, id: String(id), label: String(label) });
+  };
+  for (const m of trace ?? []) {
+    if (m.role !== "tool" || typeof m.content !== "string") continue;
+    let d: any;
+    try { d = JSON.parse(m.content); } catch { continue; }
+    if (!d || typeof d !== "object") continue;
+    for (const rk of d.racks ?? []) add("rack", rk.id, rk.name);
+    for (const dv of d.devices ?? []) add("device", dv.id, dv.name);
+    for (const sn of d.subnets ?? []) add("subnet", sn.id, sn.cidr);
+    for (const lo of d.locations ?? []) add("location", lo.id, lo.name);
+    // 單筆詳情
+    if (d.id && d.name && d.type && ("u_position" in d || "vendor" in d)) add("device", d.id, d.name);
+    if (d.subnet_id && d.cidr) add("subnet", d.subnet_id, d.cidr);
+  }
+  return refs.slice(0, 12);
+}
+
+function goRef(r: ChatRef) {
+  switch (r.type) {
+    case "rack": router.push({ name: "racks" }); break;
+    case "device": router.push({ name: "device-detail", params: { id: r.id } }); break;
+    case "subnet": router.push({ name: "subnet-detail", params: { id: r.id } }); break;
+    case "location": router.push({ name: "locations" }); break;
+    case "ip": router.push({ name: "addresses", query: { q: r.label } }); break;
+  }
+  open.value = false;
+}
 
 const open = ref(false);
 const input = ref("");
@@ -139,6 +181,7 @@ async function send() {
             // 後端有給就用後端的 LLM 耗時；否則用前端量到的整體耗時兜底
             elapsedMs: ev.elapsed_ms ?? (Date.now() - startTs),
             ts: new Date().toISOString(),
+            refs: extractRefs(ev.trace_messages),
           });
           trace.value = ev.trace_messages;
           if (ev.conversation_id) conversationId.value = ev.conversation_id;
@@ -292,6 +335,11 @@ async function removeConversation(id: string) {
           <pre v-if="m.role === 'user'">{{ m.content }}</pre>
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div v-else class="md" v-html="renderMarkdown(m.content)"></div>
+          <div v-if="m.role === 'assistant' && m.refs && m.refs.length" class="msg-refs">
+            <span class="msg-refs__label">{{ t("chat.related") }}</span>
+            <n-tag v-for="r in m.refs" :key="r.type + r.id" size="small" type="info"
+                   style="cursor: pointer" @click="goRef(r)">{{ r.label }}</n-tag>
+          </div>
           <div v-if="m.ts || m.model || m.elapsedMs != null" class="msg-meta">
             <span v-if="m.ts">{{ fmtDateTime(m.ts) }}</span>
             <span v-if="m.ts && (m.model || m.elapsedMs != null)"> · </span>
@@ -396,6 +444,9 @@ async function removeConversation(id: string) {
   container-type: inline-size;
 }
 /* 標題：字體調小 + 不換行，避免把「本地 Ollama」標籤擠到第二行 */
+/* 標題列與動作區放不下時整列換行（動作區掉到第二列），避免標題/標籤與按鈕重疊 */
+.chat-shell :deep(.n-card-header) { flex-wrap: wrap; row-gap: 6px; column-gap: 8px; }
+.chat-shell :deep(.n-card-header__main) { min-width: 0; }
 .chat-title-row { flex-wrap: nowrap; min-width: 0; }
 .chat-title { font-size: 15px; font-weight: 600; white-space: nowrap; }
 .chat-badge { white-space: nowrap; flex: 0 0 auto; }
@@ -451,6 +502,15 @@ async function removeConversation(id: string) {
   opacity: 0.55;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+/* AI 回應下方的相關物件可點連結 */
+.msg-refs {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.msg-refs__label { font-size: 12px; opacity: 0.6; }
 .chat-history {
   max-height: 340px;
   overflow-y: auto;

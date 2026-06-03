@@ -413,7 +413,8 @@
     "foot_send": "送出",
     "foot_newline": "換行",
     "foot_local": "對話不送到外部，全部本地推論",
-    "assistant": "AI 助手"
+    "assistant": "AI 助手",
+    "related": "相關"
   },
   "perm": {
     "title": "權限指派",

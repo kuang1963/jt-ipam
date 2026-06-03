@@ -22,6 +22,13 @@ const parts = computed<{ sw: string; port: string | null }>(() => {
 </template>
 
 <style scoped>
-.swp.dim { color: var(--n-text-color-3, #888); }
+/* 低信心（LibreNMS 未標記為高信心）：橘色 + 斜體 + 虛線底線，與高信心明顯區隔 */
+.swp.dim {
+  color: #d97706;
+  font-style: italic;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.swp.dim .swp-at { color: #d97706; }
 .swp-at { color: #18a058; font-weight: 700; margin: 0 1px; }
 </style>

@@ -413,7 +413,8 @@
     "foot_send": "to send",
     "foot_newline": "newline",
     "foot_local": "chats stay local, never sent externally",
-    "assistant": "AI assistant"
+    "assistant": "AI assistant",
+    "related": "Related"
   },
   "perm": {
     "title": "Permissions",

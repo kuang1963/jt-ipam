@@ -87,11 +87,20 @@ async def list_locations(
             select(Device.location_id, func.count()).where(Device.location_id.in_(loc_ids))
             .group_by(Device.location_id)
         )).all())
+    # 所屬單位名稱
+    cust_names: dict[Any, str] = {}
+    cust_ids = [r.customer_id for r in rows if r.customer_id]
+    if cust_ids:
+        from app.models.customer import Customer
+        cust_names = dict((await session.execute(  # type: ignore[arg-type]
+            select(Customer.id, Customer.name).where(Customer.id.in_(cust_ids))
+        )).all())
     items = []
     for r in rows:
         m = LocationRead.model_validate(r)
         m.rack_count = int(rack_counts.get(r.id, 0))
         m.device_count = int(dev_counts.get(r.id, 0))
+        m.customer_name = cust_names.get(r.customer_id) if r.customer_id else None
         items.append(m)
     return Paginated[LocationRead](
         items=items, total=total, page=page, page_size=page_size,

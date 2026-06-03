@@ -92,14 +92,18 @@ function go(name: string, params?: Record<string, string>) {
 // ── 常用機房 / 常用機櫃（localStorage 釘選）──
 const locPin = usePinned("locations");
 const rackPin = usePinned("racks");
-const allLocations = ref<{ id: string; name: string }[]>([]);
+const allLocations = ref<{ id: string; name: string; rack_count: number; device_count: number }[]>([]);
 const allRacks = ref<{ id: string; name: string; location_id: string | null }[]>([]);
 const pinnedLocations = computed(() => allLocations.value.filter((l) => locPin.isPinned(l.id)));
 const pinnedRacks = computed(() => allRacks.value.filter((r) => rackPin.isPinned(r.id)));
+// 釘選機房裡裝置數最大值 → 給橫條圖當基準
+const maxLocDevices = computed(() => Math.max(1, ...pinnedLocations.value.map((l) => l.device_count)));
 async function loadPins() {
   try {
     const [l, r] = await Promise.all([listLocations(), listRacks()]);
-    allLocations.value = l.items.map((x: any) => ({ id: x.id, name: x.name }));
+    allLocations.value = l.items.map((x: any) => ({
+      id: x.id, name: x.name, rack_count: x.rack_count ?? 0, device_count: x.device_count ?? 0,
+    }));
     allRacks.value = r.items.map((x: any) => ({ id: x.id, name: x.name, location_id: x.location_id }));
   } catch { /* silent */ }
 }
@@ -245,10 +249,20 @@ onMounted(() => { void load(); void loadPins(); });
 
       <!-- 常用機房 / 地點 -->
       <n-card v-if="pinnedLocations.length" :title="t('dashboard.pinned_locations')">
-        <n-space vertical :size="6">
-          <div v-for="l in pinnedLocations" :key="l.id" class="row-line" @click="go('locations')">
-            <n-icon :size="16" style="opacity:.6"><LocationsIcon /></n-icon>
-            <span style="margin-left:8px">{{ l.name }}</span>
+        <n-space vertical :size="8">
+          <div v-for="l in pinnedLocations" :key="l.id" class="loc-row" @click="go('locations')">
+            <div class="loc-head">
+              <n-icon :size="16" style="opacity:.6"><LocationsIcon /></n-icon>
+              <span class="loc-name">{{ l.name }}</span>
+              <span class="loc-counts">
+                <n-icon :size="13"><RacksIcon /></n-icon>{{ l.rack_count }}
+                <n-icon :size="13" style="margin-left:8px"><DevicesIcon /></n-icon>{{ l.device_count }}
+              </span>
+            </div>
+            <!-- 橫式分布：各機房裝置數相對長條 -->
+            <div class="loc-bar">
+              <div class="loc-bar__fill" :style="{ width: (l.device_count / maxLocDevices * 100) + '%' }"></div>
+            </div>
           </div>
         </n-space>
       </n-card>
@@ -360,6 +374,25 @@ onMounted(() => { void load(); void loadPins(); });
   font-size: 12px; opacity: 0.65; white-space: nowrap;
 }
 .hier-count { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* 常用機房：名稱 + 機櫃/裝置數 + 橫式分布條 */
+.loc-row { cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background .15s; }
+.loc-row:hover { background: rgba(127, 127, 127, 0.08); }
+.loc-head { display: flex; align-items: center; gap: 6px; }
+.loc-name { font-weight: 500; }
+.loc-counts {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 2px;
+  font-size: 12px; opacity: 0.7; font-variant-numeric: tabular-nums;
+}
+.loc-bar {
+  margin-top: 4px; height: 6px; border-radius: 3px;
+  background: rgba(127, 127, 127, 0.15); overflow: hidden;
+}
+.loc-bar__fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #18a058, #36ad6a);
+  transition: width .3s;
+}
 .hier-arrow {
   display: flex; align-items: center;
   color: var(--n-text-color-3, #999); font-size: 16px; user-select: none;
