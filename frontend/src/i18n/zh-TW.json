@@ -1598,6 +1598,10 @@
     "trace": "纜線追蹤",
     "trace_title": "纜線追蹤：{p}",
     "not_connected": "此埠尚未接任何纜線",
-    "download_svg": "下載 SVG"
+    "download_svg": "下載 SVG",
+    "import": "從來源匯入",
+    "import_done": "已從 LibreNMS 匯入 {n} 個連接埠",
+    "import_none": "沒有新的連接埠可匯入",
+    "import_no_source": "此裝置尚未連結 LibreNMS，無來源可匯入"
   }
 }

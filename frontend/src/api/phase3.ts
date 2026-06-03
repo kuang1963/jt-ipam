@@ -393,6 +393,10 @@ export const Physical = {
     return data;
   },
   async deletePort(id: string): Promise<void> { await apiClient.delete(`/api/v1/device-ports/${id}`); },
+  async importPorts(deviceId: string): Promise<{ imported: number; found: number; linked_librenms: number; source: string }> {
+    const { data } = await apiClient.post("/api/v1/device-ports/import", null, { params: { device_id: deviceId } });
+    return data;
+  },
   async tracePort(id: string): Promise<PortTrace> {
     const { data } = await apiClient.get<PortTrace>(`/api/v1/ports/${id}/trace`);
     return data;

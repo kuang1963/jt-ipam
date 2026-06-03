@@ -15,6 +15,7 @@ from app.api.v1.dependencies import CurrentUser, require_admin
 from app.core.audit import append_audit
 from app.core.db import get_session
 from app.models.device import Device
+from app.models.librenms import FDBEntry, LibreNMSDevice
 from app.models.physical import (
     Cable,
     CableTermination,
@@ -227,6 +228,47 @@ async def create_device_port(
     await session.commit()
     await session.refresh(obj)
     return DevicePortRead.model_validate(obj)
+
+
+@router.post("/device-ports/import", dependencies=[Depends(require_admin)])
+async def import_device_ports(
+    user: CurrentUser,
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    device_id: uuid.UUID = Query(...),
+) -> dict[str, Any]:
+    """從整合來源把連接埠撈進來。目前支援 LibreNMS（用 FDB 學到的 port_name）。"""
+    lns_ids = list((await session.execute(
+        select(LibreNMSDevice.id).where(LibreNMSDevice.jt_ipam_device_id == device_id)
+    )).scalars().all())
+    names: set[str] = set()
+    if lns_ids:
+        rows = (await session.execute(
+            select(FDBEntry.port_name).where(
+                FDBEntry.device_id.in_(lns_ids),
+                FDBEntry.port_name.is_not(None),
+            ).distinct()
+        )).all()
+        names = {r[0].strip() for r in rows if r[0] and r[0].strip()}
+
+    existing = {p.name for p in (await session.execute(
+        select(DevicePort).where(DevicePort.device_id == device_id)
+    )).scalars().all()}
+
+    created = 0
+    for n in sorted(names):
+        if n in existing:
+            continue
+        session.add(DevicePort(device_id=device_id, name=n, type="network"))
+        created += 1
+
+    if created:
+        await _audit(session, user=user, request=request, object_type="device_port",
+                     object_id=str(device_id), action="import",
+                     diff={"imported": created, "source": "librenms-fdb"})
+        await session.commit()
+    return {"imported": created, "found": len(names),
+            "linked_librenms": len(lns_ids), "source": "librenms-fdb"}
 
 
 @router.patch("/device-ports/{port_id}", response_model=DevicePortRead,

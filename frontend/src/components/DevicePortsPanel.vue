@@ -57,6 +57,18 @@ async function del(id: string) {
   catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.server")); }
 }
 
+const importing = ref(false);
+async function importPorts() {
+  importing.value = true;
+  try {
+    const r = await Physical.importPorts(props.deviceId);
+    if (!r.linked_librenms) msg.warning(t("ports.import_no_source"));
+    else if (r.imported) { msg.success(t("ports.import_done", { n: r.imported })); await refresh(); }
+    else msg.info(t("ports.import_none"));
+  } catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.server")); }
+  finally { importing.value = false; }
+}
+
 // ── connect ──
 const showConnect = ref(false);
 const connectFrom = ref<DevicePort | null>(null);
@@ -175,6 +187,9 @@ onMounted(() => { void refresh(); });
       <n-space :size="8">
         <n-button v-if="admin" size="small" type="primary" @click="openCreate">
           <template #icon><n-icon><PlusIcon /></n-icon></template>{{ t("ports.add") }}
+        </n-button>
+        <n-button v-if="admin" size="small" :loading="importing" @click="importPorts">
+          <template #icon><n-icon><LinkIcon /></n-icon></template>{{ t("ports.import") }}
         </n-button>
         <n-button size="small" @click="refresh" :loading="loading">
           <template #icon><n-icon><RefreshIcon /></n-icon></template>{{ t("common.refresh") }}

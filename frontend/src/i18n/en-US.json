@@ -1598,6 +1598,10 @@
     "trace": "Cable trace",
     "trace_title": "Cable trace: {p}",
     "not_connected": "This port is not cabled",
-    "download_svg": "Download SVG"
+    "download_svg": "Download SVG",
+    "import": "Import from source",
+    "import_done": "Imported {n} ports from LibreNMS",
+    "import_none": "No new ports to import",
+    "import_no_source": "No linked LibreNMS source for this device"
   }
 }

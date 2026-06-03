@@ -37,7 +37,7 @@ const { labelFor: customerLabelFor, ensureLoaded: ensureCustomersLoaded } = useC
 const { visibleKeys: ipVisibleKeys, setVisible: setIpVisible, reset: resetIpVisible } = useColumnPrefs(
   "device_detail_ips",
   ["live", "ip", "hostname", "state", "mac", "mac_vendor", "switch_port", "description", "last_seen"],
-  ["live", "ip", "hostname", "state", "mac", "mac_vendor", "switch_port", "description", "last_seen"],
+  ["live", "ip", "hostname", "state", "mac", "mac_vendor", "switch_port", "last_seen"],
 );
 const ipColumnPickerItems = [
   { key: "live", label: t("cols.live") },
