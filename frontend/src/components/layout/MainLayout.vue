@@ -421,6 +421,11 @@ function startDrag(e: MouseEvent) {
   padding: 14px 16px;
   display: flex;
   align-items: center;
+  /* logo + 系統名 + 版本固定在頂端，選單捲動時仍可見（用 naive 的 sider 底色避免穿透）*/
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--n-color, #fff);
 }
 .brand-collapsed {
   padding: 14px 0;
