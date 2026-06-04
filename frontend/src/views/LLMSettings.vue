@@ -37,6 +37,21 @@ const modelOptions = computed(() => {
   return opts;
 });
 
+// 嵌入模型名稱慣例含 "embed"（qwen3-embedding / nomic-embed-text / mxbai-embed…）
+const isEmbedModel = (name: string) => /embed/i.test(name);
+// 嵌入模型下拉：只有嵌入模型可選，其餘反灰（目前已選的仍保留可見）
+const embeddingModelOptions = computed(() =>
+  modelOptions.value.map((o) => ({
+    ...o,
+    disabled: !isEmbedModel(o.value) && o.value !== llm.value?.embedding_model,
+  })));
+// 對話模型下拉：反過來把嵌入模型反灰
+const chatModelOptions = computed(() =>
+  modelOptions.value.map((o) => ({
+    ...o,
+    disabled: isEmbedModel(o.value) && o.value !== llm.value?.chat_model,
+  })));
+
 async function loadModels() {
   modelsLoading.value = true;
   modelsError.value = null;
@@ -115,7 +130,7 @@ onMounted(load);
         </n-space>
         <n-select
           :value="llm.chat_model"
-          :options="modelOptions"
+          :options="chatModelOptions"
           :loading="modelsLoading"
           :placeholder="t('llm_settings.pick_model')"
           filterable
@@ -126,7 +141,7 @@ onMounted(load);
         <label>{{ t("llm_settings.embedding_model") }}</label>
         <n-select
           :value="llm.embedding_model"
-          :options="modelOptions"
+          :options="embeddingModelOptions"
           :loading="modelsLoading"
           :placeholder="t('llm_settings.pick_model')"
           filterable
