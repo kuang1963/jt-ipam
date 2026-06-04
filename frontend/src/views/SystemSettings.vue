@@ -98,6 +98,12 @@ const dsvSaving = ref(false);
 const dsvFmtOpts = [{ label: "CSV (,)", value: "csv" }, { label: "TSV (Tab)", value: "tsv" }];
 const dsvUrl = computed(() =>
   dsv.value.token ? `${location.origin}/api/v1/lookup/${dsv.value.path}?token=${dsv.value.token}` : "");
+// 明文 HTTP 專用埠（對應 nginx 8088 server 區塊）；給不便走 HTTPS 的 Graylog 轉接器用
+const DSV_HTTP_PORT = 8088;
+const dsvUrlHttp = computed(() =>
+  dsv.value.token
+    ? `http://${location.hostname}:${DSV_HTTP_PORT}/api/v1/lookup/${dsv.value.path}?token=${dsv.value.token}`
+    : "");
 async function loadDsv() { try { dsv.value = await getGraylogDsv(); } catch { /* ignore */ } }
 async function saveDsv(regenerate = false) {
   dsvSaving.value = true;
@@ -110,6 +116,9 @@ async function saveDsv(regenerate = false) {
 }
 function copyDsvUrl() {
   if (dsvUrl.value) { void navigator.clipboard.writeText(dsvUrl.value); msg.success(t("common.ok")); }
+}
+function copyDsvUrlHttp() {
+  if (dsvUrlHttp.value) { void navigator.clipboard.writeText(dsvUrlHttp.value); msg.success(t("common.ok")); }
 }
 
 onMounted(() => {
@@ -243,6 +252,16 @@ onMounted(() => {
               <template #icon><n-icon><CopyIcon /></n-icon></template>{{ t("settings.system.graylog_copy") }}
             </n-button>
           </div>
+        </div>
+        <div v-if="dsvUrlHttp" class="fld" style="margin-top:10px">
+          <label>{{ t("settings.system.graylog_url_http") }}</label>
+          <div style="display:flex; gap:8px; align-items:center">
+            <n-input :value="dsvUrlHttp" readonly style="flex:1" />
+            <n-button size="small" type="primary" ghost @click="copyDsvUrlHttp">
+              <template #icon><n-icon><CopyIcon /></n-icon></template>{{ t("settings.system.graylog_copy") }}
+            </n-button>
+          </div>
+          <div class="hint" style="margin-top:4px">{{ t("settings.system.graylog_url_http_hint") }}</div>
         </div>
         <div class="hint" style="line-height:1.6; margin-top:10px">{{ t("settings.system.graylog_hint") }}</div>
       </section>

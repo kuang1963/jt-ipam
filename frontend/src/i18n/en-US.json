@@ -1432,7 +1432,9 @@
       "graylog_path": "Path name",
       "graylog_format": "Format",
       "graylog_regen": "Regenerate token",
-      "graylog_url": "Lookup URL (for Graylog)",
+      "graylog_url": "Lookup URL (HTTPS, for Graylog)",
+      "graylog_url_http": "Lookup URL (plain HTTP, for Graylog)",
+      "graylog_url_http_hint": "Served on dedicated port 8088, unencrypted; the token is exposed on the wire — trusted LAN only. To disable, remove the 8088 server block in the nginx config.",
       "graylog_copy": "Copy",
       "graylog_hint": "In Graylog, add a “DSV File from HTTP” data adapter and paste the URL above; pick separator , or Tab per format, key column = 1, value column = 2 (key = IP, value = hostname / FQDN). Regenerate the token any time to revoke access."
     }
