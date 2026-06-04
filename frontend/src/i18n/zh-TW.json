@@ -1525,7 +1525,11 @@
     "reload_list": "重新載入清單",
     "chat_model": "對話模型",
     "embedding_model": "嵌入模型",
-    "timeout_sec": "逾時 (秒)"
+    "timeout_sec": "逾時 (秒)",
+    "tools_title": "jt-ipam MCP 工具",
+    "tools_intro": "AI 助理與外部 MCP 客戶端可呼叫以下 {n} 個工具（其中 {m} 個會異動資料、執行前需確認）。查詢類即時回答；異動類在 AI 對話中會先停下來請你按「確認」。",
+    "tools_mutating": "異動",
+    "tools_readonly": "唯讀"
   },
   "rack_diagram": {
     "empty": "此機櫃尚無裝置",

@@ -161,6 +161,14 @@ export async function purgeChatHistory(): Promise<{ removed: number; retention_d
   return data;
 }
 
+// MCP / AI 工具清單（管理區 LLM 頁顯示）
+export interface McpToolParam { name: string; type: string; required: boolean; description: string; }
+export interface McpTool { name: string; description: string; mutating: boolean; params: McpToolParam[]; }
+export async function listMcpTools(): Promise<{ tools: McpTool[]; total: number; mutating_count: number }> {
+  const { data } = await apiClient.get("/api/v1/ai/tools");
+  return data;
+}
+
 // 模型參數摘要（chat badge tooltip 用）
 export interface ModelInfo {
   model: string;

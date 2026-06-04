@@ -453,3 +453,26 @@ async def model_info(
         "quantization": det.get("quantization_level"),
         "context_length": ctx,
     }
+
+
+@router.get("/tools")
+async def list_mcp_tools(_user: CurrentUser) -> dict[str, Any]:
+    """列出 AI 助理 / MCP server 可用的工具（名稱、用途、參數、是否會異動資料）。"""
+    from app.mcp.tools import MUTATING_TOOLS, TOOLS
+    items = []
+    for name, meta in sorted(TOOLS.items()):
+        params = (meta.get("parameters") or {}).get("properties") or {}
+        required = set((meta.get("parameters") or {}).get("required") or [])
+        items.append({
+            "name": name,
+            "description": meta.get("description") or "",
+            "mutating": name in MUTATING_TOOLS,
+            "params": [
+                {"name": p, "type": (spec or {}).get("type", "string"),
+                 "required": p in required,
+                 "description": (spec or {}).get("description", "")}
+                for p, spec in params.items()
+            ],
+        })
+    return {"tools": items, "total": len(items),
+            "mutating_count": sum(1 for i in items if i["mutating"])}

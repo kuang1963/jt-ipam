@@ -1525,7 +1525,11 @@
     "reload_list": "Reload list",
     "timeout_sec": "Timeout (s)",
     "chat_model": "Chat model",
-    "embedding_model": "Embedding model"
+    "embedding_model": "Embedding model",
+    "tools_title": "jt-ipam MCP tools",
+    "tools_intro": "The AI assistant and external MCP clients can call these {n} tools ({m} of which change data and require confirmation). Read-only tools answer instantly; mutating ones pause in the AI chat for you to confirm.",
+    "tools_mutating": "Mutating",
+    "tools_readonly": "Read-only"
   },
   "rack_diagram": {
     "empty": "No devices in this rack",
