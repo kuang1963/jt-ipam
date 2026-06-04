@@ -95,3 +95,6 @@ frontend/playwright/.cache/
 # Local notes (may contain sensitive context)
 NOTES.local.md
 TODO.local.md
+
+# 原始擷圖(含瀏覽器網址列等)只留本機；公開版用 docs/shots/
+images/
