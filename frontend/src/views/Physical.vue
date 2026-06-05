@@ -3,13 +3,19 @@ import { computed, h, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   NCard, NDataTable, NSpace, NIcon, NButton, NTag, NModal, NForm, NFormItem,
-  NSelect, NInput, NInputNumber,
+  NSelect, NInput, NInputNumber, NPopconfirm,
   useMessage, type DataTableColumns,
 } from "naive-ui";
-import { PhysicalIcon, PowerIcon, VpnIcon, RefreshIcon, PlusIcon } from "@/icons";
+import { PhysicalIcon, PowerIcon, VpnIcon, RefreshIcon, PlusIcon, EditIcon, DeleteIcon } from "@/icons";
 import { Physical, type DevicePort } from "@/api/phase3";
 import { listDevices, listLocations } from "@/api/basic";
 import { autoSort } from "@/composables/useTableSort";
+import ColumnPicker from "@/components/ColumnPicker.vue";
+import ExportButton from "@/components/ExportButton.vue";
+import { useColumnPrefs } from "@/composables/useColumnPrefs";
+import { useAuthStore } from "@/stores/auth";
+const _authBtn = useAuthStore();
+const canEdit = computed(() => _authBtn.me?.can_edit !== false);
 
 // 三個獨立頁面共用此元件，以 mode 決定顯示哪一段（佈線 / 電力 / VPN）
 const props = defineProps<{ mode?: "cabling" | "power" | "vpn" }>();
@@ -69,13 +75,31 @@ function statusTag(s: string) {
   return h(NTag, { size: "small", type, bordered: false }, () => s);
 }
 
-const cableCols = computed<DataTableColumns<any>>(() => autoSort([
-  { title: t("cols.type"), key: "type", width: 110, render: (r: any) => r.type ?? "—" },
-  { title: t("physical.a_end"), key: "a_end", minWidth: 200, ellipsis: { tooltip: true }, render: (r: any) => r.a_end ?? "—" },
-  { title: t("physical.b_end"), key: "b_end", minWidth: 200, ellipsis: { tooltip: true }, render: (r: any) => r.b_end ?? "—" },
-  { title: t("common.status"), key: "status", width: 110, render: (r: any) => statusTag(r.status) },
-  { title: t("sections.description"), key: "description", minWidth: 160, ellipsis: { tooltip: true }, render: (r: any) => r.label || r.description || "—" },
+const cableColsAll = computed<DataTableColumns<any>>(() => autoSort([
+  { title: t("cols.type"), key: "type", width: 100, render: (r: any) => r.type ?? "—" },
+  { title: t("physical.cable_label"), key: "label", width: 120, ellipsis: { tooltip: true }, render: (r: any) => r.label ?? "—" },
+  { title: t("physical.a_end"), key: "a_end", minWidth: 190, ellipsis: { tooltip: true }, render: (r: any) => r.a_end ?? "—" },
+  { title: t("physical.b_end"), key: "b_end", minWidth: 190, ellipsis: { tooltip: true }, render: (r: any) => r.b_end ?? "—" },
+  { title: t("common.status"), key: "status", width: 100, render: (r: any) => statusTag(r.status) },
+  { title: t("sections.description"), key: "description", minWidth: 150, ellipsis: { tooltip: true }, render: (r: any) => r.description ?? "—" },
+  { title: t("common.actions"), key: "actions", width: 96, render: (r: any) => h(NSpace, { size: 4 }, () => [
+    h(NButton, { size: "tiny", quaternary: true, disabled: !canEdit.value, onClick: () => openEditCable(r) },
+      { icon: () => h(NIcon, null, () => h(EditIcon)) }),
+    h(NPopconfirm, { onPositiveClick: () => delCable(r) }, {
+      trigger: () => h(NButton, { size: "tiny", quaternary: true, type: "error", disabled: !canEdit.value },
+        { icon: () => h(NIcon, null, () => h(DeleteIcon)) }),
+      default: () => t("common.confirm_delete"),
+    }),
+  ]) },
 ]));
+const cableKeys = ["type", "label", "a_end", "b_end", "status", "description", "actions"];
+const cablePickerItems = computed(() => cableColsAll.value
+  .map((c: any) => ({ key: c.key, label: typeof c.title === "function" ? c.title() : c.title }))
+  .filter((c: any) => c.key));
+const { visibleKeys: cableVisible, setVisible: setCableVisible, reset: resetCableVisible } =
+  useColumnPrefs("cables", cableKeys, cableKeys);
+const cableCols = computed<DataTableColumns<any>>(() =>
+  cableColsAll.value.filter((c: any) => cableVisible.value.includes(c.key)));
 const panelCols = computed<DataTableColumns<any>>(() => autoSort([
   { title: t("common.name"), key: "name" },
   { title: t("nav.locations"), key: "location_id", render: (r: any) => locations.value.find((l) => l.id === r.location_id)?.name ?? "—" },
@@ -112,7 +136,8 @@ const vpnCols = computed<DataTableColumns<any>>(() => autoSort([
 ]));
 
 // ── 新增纜線 ──
-const cableTypeOpts = ["cat5e", "cat6", "cat6a", "dac", "fiber-mm", "fiber-sm", "power"].map((v) => ({ label: v, value: v }));
+const cableTypeOpts = ["cat5e", "cat6", "cat6a", "dac", "fiber-mm", "fiber-sm"].map((v) => ({ label: v, value: v }));
+const cableStatusOpts = ["connected", "planned", "decommissioned"].map((v) => ({ label: v, value: v }));
 const showCable = ref(false);
 const savingCable = ref(false);
 const cableForm = ref<{ aDevice: string | null; aPort: string | null; bDevice: string | null; bPort: string | null; type: string | null; label: string }>(
@@ -132,6 +157,37 @@ async function saveCable() {
     await Physical.connectPorts(f.aPort, f.bPort, { type: f.type ?? undefined, label: f.label.trim() || undefined });
     msg.success(t("common.ok")); showCable.value = false; await refresh();
   } catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.network")); } finally { savingCable.value = false; }
+}
+
+// ── 編輯 / 刪除纜線 ──
+const showCableEdit = ref(false);
+const savingCableEdit = ref(false);
+const editingCableId = ref<string | null>(null);
+const cableEditForm = ref<{ type: string | null; label: string; color: string; length_m: number | null; description: string; status: string }>(
+  { type: null, label: "", color: "", length_m: null, description: "", status: "connected" });
+function openEditCable(r: any) {
+  editingCableId.value = r.id;
+  cableEditForm.value = {
+    type: r.type ?? null, label: r.label ?? "", color: r.color ?? "",
+    length_m: r.length_m ?? null, description: r.description ?? "", status: r.status ?? "connected",
+  };
+  showCableEdit.value = true;
+}
+async function saveEditCable() {
+  if (!editingCableId.value) return;
+  savingCableEdit.value = true;
+  try {
+    const f = cableEditForm.value;
+    await Physical.updateCable(editingCableId.value, {
+      type: f.type, label: f.label.trim() || null, color: f.color.trim() || null,
+      length_m: f.length_m, description: f.description.trim() || null, status: f.status,
+    });
+    msg.success(t("common.ok")); showCableEdit.value = false; await refresh();
+  } catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.network")); } finally { savingCableEdit.value = false; }
+}
+async function delCable(r: any) {
+  try { await Physical.deleteCable(r.id); msg.success(t("common.ok")); await refresh(); }
+  catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.network")); }
 }
 
 // ── 新增電力（配電盤 / 饋線 / 插座）──
@@ -179,10 +235,14 @@ watch(mode, () => { void refresh(); });
         <template #icon><n-icon><RefreshIcon /></n-icon></template>
         {{ t("common.refresh") }}
       </n-button>
-      <n-button v-if="mode === 'cabling'" type="primary" @click="openCable">
+      <n-button v-if="mode === 'cabling'" type="primary" :disabled="!canEdit" @click="openCable">
         <template #icon><n-icon><PlusIcon /></n-icon></template>
         {{ t("physical.add_cable") }}
       </n-button>
+      <ColumnPicker v-if="mode === 'cabling'" :all="cablePickerItems" :visible="cableVisible"
+                    @update:visible="setCableVisible" @reset="resetCableVisible" />
+      <ExportButton v-if="mode === 'cabling'" :columns="cablePickerItems" :rows="cables"
+                    filename="cables" :title="t('nav.cabling')" />
     </n-space>
 
     <n-data-table v-if="mode === 'cabling'"
@@ -243,6 +303,38 @@ watch(mode, () => { void refresh(); });
         <n-space justify="end">
           <n-button @click="showCable = false">{{ t("common.cancel") }}</n-button>
           <n-button type="primary" :loading="savingCable" @click="saveCable">{{ t("common.save") }}</n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- 編輯纜線 -->
+    <n-modal v-model:show="showCableEdit" preset="card" :title="t('physical.edit_cable')" style="max-width:460px">
+      <n-form label-placement="top">
+        <n-form-item :label="t('cols.type')">
+          <n-select v-model:value="cableEditForm.type" :options="cableTypeOpts" clearable />
+        </n-form-item>
+        <n-form-item :label="t('physical.cable_label')">
+          <n-input v-model:value="cableEditForm.label" placeholder="(optional)" />
+        </n-form-item>
+        <n-space>
+          <n-form-item :label="t('physical.cable_color')" style="flex:1">
+            <n-input v-model:value="cableEditForm.color" placeholder="(optional)" />
+          </n-form-item>
+          <n-form-item :label="t('physical.cable_length_m')" style="flex:1">
+            <n-input-number v-model:value="cableEditForm.length_m" :min="0" :max="10000" style="width:100%" />
+          </n-form-item>
+        </n-space>
+        <n-form-item :label="t('common.status')">
+          <n-select v-model:value="cableEditForm.status" :options="cableStatusOpts" />
+        </n-form-item>
+        <n-form-item :label="t('sections.description')">
+          <n-input v-model:value="cableEditForm.description" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showCableEdit = false">{{ t("common.cancel") }}</n-button>
+          <n-button type="primary" :loading="savingCableEdit" @click="saveEditCable">{{ t("common.save") }}</n-button>
         </n-space>
       </template>
     </n-modal>

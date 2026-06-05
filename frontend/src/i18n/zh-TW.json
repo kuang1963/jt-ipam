@@ -1261,7 +1261,10 @@
     "same_port": "兩端不能是同一個連接埠",
     "cable_label": "標籤",
     "need_name": "請輸入名稱",
-    "need_panel": "請選擇配電盤"
+    "need_panel": "請選擇配電盤",
+    "edit_cable": "編輯纜線",
+    "cable_color": "顏色",
+    "cable_length_m": "長度 (公尺)"
   },
   "migration": {
     "title": "phpIPAM 一鍵遷移",

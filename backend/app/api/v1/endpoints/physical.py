@@ -164,6 +164,46 @@ async def create_cable(
     return CableRead.model_validate(obj)
 
 
+@router.patch("/cables/{cable_id}", response_model=CableRead,
+              dependencies=[Depends(require_admin)])
+async def update_cable(
+    cable_id: uuid.UUID, payload: CableWrite, user: CurrentUser, request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> CableRead:
+    obj = await session.get(Cable, cable_id)
+    if obj is None:
+        raise HTTPException(404, detail="Cable not found")
+    for k, v in payload.model_dump(exclude_unset=True).items():
+        setattr(obj, k, v)
+    await session.flush()
+    await _audit(session, user=user, request=request, object_type="cable",
+                 object_id=str(obj.id), action="update",
+                 diff=payload.model_dump(mode="json", exclude_unset=True))
+    await session.commit()
+    await session.refresh(obj)
+    return CableRead.model_validate(obj)
+
+
+@router.delete("/cables/{cable_id}", status_code=204,
+               dependencies=[Depends(require_admin)])
+async def delete_cable(
+    cable_id: uuid.UUID, user: CurrentUser, request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> None:
+    obj = await session.get(Cable, cable_id)
+    if obj is None:
+        raise HTTPException(404, detail="Cable not found")
+    # 先刪兩端 termination 再刪 cable
+    for t in (await session.execute(
+        select(CableTermination).where(CableTermination.cable_id == cable_id)
+    )).scalars().all():
+        await session.delete(t)
+    await session.delete(obj)
+    await _audit(session, user=user, request=request, object_type="cable",
+                 object_id=str(cable_id), action="delete", diff=None)
+    await session.commit()
+
+
 @router.post("/cable-terminations", response_model=CableTerminationRead,
              status_code=201, dependencies=[Depends(require_admin)])
 async def add_termination(

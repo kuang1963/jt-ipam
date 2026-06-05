@@ -423,4 +423,10 @@ export const Physical = {
     await apiClient.post("/api/v1/cable-terminations", { cable_id: cable.id, side: "A", object_type: "device_port", object_id: aPortId });
     await apiClient.post("/api/v1/cable-terminations", { cable_id: cable.id, side: "B", object_type: "device_port", object_id: bPortId });
   },
+  async updateCable(id: string, patch: { type?: string | null; label?: string | null; color?: string | null; length_m?: number | null; description?: string | null; status?: string }): Promise<void> {
+    await apiClient.patch(`/api/v1/cables/${id}`, patch);
+  },
+  async deleteCable(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/cables/${id}`);
+  },
 };

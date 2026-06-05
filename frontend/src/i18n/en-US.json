@@ -1261,7 +1261,10 @@
     "same_port": "Both ends can't be the same port",
     "cable_label": "Label",
     "need_name": "Enter a name",
-    "need_panel": "Select a panel"
+    "need_panel": "Select a panel",
+    "edit_cable": "Edit cable",
+    "cable_color": "Color",
+    "cable_length_m": "Length (m)"
   },
   "migration": {
     "title": "phpIPAM migration",
