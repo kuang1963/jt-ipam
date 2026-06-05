@@ -1271,7 +1271,9 @@
     "need_panel": "請選擇配電盤",
     "edit_cable": "編輯纜線",
     "cable_color": "顏色",
-    "cable_length_m": "長度 (公尺)"
+    "cable_length_m": "長度 (公尺)",
+    "cable_filter_ph": "篩選：類型/線標/兩端/說明",
+    "cable_filter_device": "篩選裝置"
   },
   "migration": {
     "title": "phpIPAM 一鍵遷移",

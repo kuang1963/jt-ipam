@@ -1271,7 +1271,9 @@
     "need_panel": "Select a panel",
     "edit_cable": "Edit cable",
     "cable_color": "Color",
-    "cable_length_m": "Length (m)"
+    "cable_length_m": "Length (m)",
+    "cable_filter_ph": "Filter: type / label / ends / desc",
+    "cable_filter_device": "Filter by device"
   },
   "migration": {
     "title": "phpIPAM migration",

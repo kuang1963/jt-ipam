@@ -35,6 +35,23 @@ const loading = ref(false);
 const devices = ref<{ id: string; name: string }[]>([]);
 const locations = ref<{ id: string; name: string }[]>([]);
 const deviceOpts = computed(() => devices.value.map((d) => ({ label: d.name, value: d.id })));
+
+// 佈線篩選：文字（兩端/類型/線標/說明）+ 裝置
+const cableFilterText = ref("");
+const cableFilterDevice = ref<string | null>(null);
+const filteredCables = computed(() => {
+  const q = cableFilterText.value.trim().toLowerCase();
+  const dev = cableFilterDevice.value;
+  return cables.value.filter((c: any) => {
+    if (dev && c.a_device_id !== dev && c.b_device_id !== dev) return false;
+    if (q) {
+      const hay = [c.type, c.label, c.a_end, c.b_end, c.status, c.description]
+        .map((x) => String(x ?? "").toLowerCase()).join(" ");
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+});
 const locationOpts = computed(() => locations.value.map((l) => ({ label: l.name, value: l.id })));
 
 async function refresh() {
@@ -229,8 +246,8 @@ async function savePower() {
   } catch (e: any) { msg.error(e?.response?.data?.detail ?? t("errors.network")); } finally { savingPower.value = false; }
 }
 
-onMounted(() => { void refresh(); });
-watch(mode, () => { void refresh(); });
+onMounted(() => { void refresh(); if (mode.value === "cabling") void ensureDevices(); });
+watch(mode, () => { void refresh(); if (mode.value === "cabling") void ensureDevices(); });
 </script>
 
 <template>
@@ -241,7 +258,13 @@ watch(mode, () => { void refresh(); });
         <span>{{ pageTitle }}</span>
       </n-space>
     </template>
-    <n-space style="margin-bottom: 12px">
+    <n-space align="center" style="margin-bottom: 12px">
+      <template v-if="mode === 'cabling'">
+        <n-input v-model:value="cableFilterText" clearable style="width: 200px"
+                 :placeholder="t('physical.cable_filter_ph')" />
+        <n-select v-model:value="cableFilterDevice" :options="deviceOpts" filterable clearable
+                  style="width: 200px" :placeholder="t('physical.cable_filter_device')" />
+      </template>
       <n-button @click="refresh" :loading="loading">
         <template #icon><n-icon><RefreshIcon /></n-icon></template>
         {{ t("common.refresh") }}
@@ -252,12 +275,12 @@ watch(mode, () => { void refresh(); });
       </n-button>
       <ColumnPicker v-if="mode === 'cabling'" :all="cablePickerItems" :visible="cableVisible"
                     @update:visible="setCableVisible" @reset="resetCableVisible" />
-      <ExportButton v-if="mode === 'cabling'" :columns="cablePickerItems" :rows="cables"
+      <ExportButton v-if="mode === 'cabling'" :columns="cablePickerItems" :rows="filteredCables"
                     filename="cables" :title="t('nav.cabling')" />
     </n-space>
 
     <n-data-table v-if="mode === 'cabling'"
-      :columns="cableCols" :data="cables" :loading="loading" :bordered="false" :scroll-x="900" />
+      :columns="cableCols" :data="filteredCables" :loading="loading" :bordered="false" :scroll-x="900" />
 
     <template v-else-if="mode === 'power'">
       <n-space align="center" style="margin-bottom:6px">
