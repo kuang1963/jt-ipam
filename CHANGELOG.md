@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.104] — 2026-06-07
+
+### Fixed
+- Graylog DSV lookup endpoint now emits each IP only once. The same IP can exist
+  in multiple (overlapping) subnets, which produced duplicate rows and made
+  Graylog's "DSV File from HTTP" data adapter fail with "Multiple entries with
+  same key". Keys are now de-duplicated (first by IP order).
+
 ## [0.4.103] — 2026-06-07
 
 ### Changed

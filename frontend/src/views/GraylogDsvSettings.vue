@@ -43,7 +43,7 @@ function copy(text: string) {
   if (text) { void navigator.clipboard.writeText(text); msg.success(t("common.ok")); }
 }
 
-// Pipeline rule 範例（程式碼不翻譯）；路徑名稱跟著設定走
+// Pipeline rule 範例（程式碼不翻譯）；lookup_value 第一個參數是 Lookup Table 的「名稱」(jt_ipam_table)，不是 DSV 路徑
 const pipelineRule = computed(() => `rule "enrich src_ip -> hostname (LAN only)"
 when
     has_field("src_ip") &&
@@ -53,7 +53,7 @@ when
         cidr_match("192.168.0.0/16", to_ip($message.src_ip))
     )
 then
-    let h = lookup_value("${dsv.value.path || "ip-fqdn"}", to_string($message.src_ip));
+    let h = lookup_value("jt_ipam_table", to_string($message.src_ip));
     set_field("src_hostname", h);
 end`);
 
@@ -135,25 +135,37 @@ onMounted(() => { void load(); });
 
       <div class="gd-sub">① Data Adapter — <code>DSV File from HTTP</code></div>
       <table class="gd-tbl">
+        <tr><td>Title</td><td><code>jt_ipam_adapter</code></td></tr>
+        <tr><td>Description</td><td>{{ t("settings.system.graylog_g_adapter_desc") }}</td></tr>
+        <tr><td>Name</td><td><code>jt_ipam_adapter</code></td></tr>
         <tr><td>File / Download URL</td><td><code>{{ sampleUrl }}</code></td></tr>
         <tr><td>Separator</td><td><code>{{ sep }}</code> （CSV=逗號、TSV=Tab）</td></tr>
+        <tr><td>Line Separator</td><td><code>\n</code></td></tr>
         <tr><td>Quote character</td><td><code>"</code>（TSV 可留空）</td></tr>
+        <tr><td>Ignore characters</td><td><code>#</code></td></tr>
         <tr><td>Key column</td><td><code>1</code>（IP）</td></tr>
         <tr><td>Value column</td><td><code>2</code>（hostname / FQDN）</td></tr>
-        <tr><td>Check interval</td><td><code>60</code> 秒（多久重抓一次）</td></tr>
+        <tr><td>Refresh interval</td><td><code>300</code> 秒（多久重抓一次）</td></tr>
       </table>
 
       <div class="gd-sub">② Cache — <code>Node-local, in-memory cache</code></div>
       <table class="gd-tbl">
+        <tr><td>Title</td><td><code>jt_ipam_cache</code></td></tr>
+        <tr><td>Description</td><td>{{ t("settings.system.graylog_g_cache_desc") }}</td></tr>
+        <tr><td>Name</td><td><code>jt_ipam_cache</code></td></tr>
         <tr><td>Maximum entries</td><td><code>100000</code></td></tr>
-        <tr><td>Expire after write</td><td><code>60s</code></td></tr>
+        <tr><td>Expire after write</td><td><code>300s</code></td></tr>
       </table>
 
       <div class="gd-sub">③ Lookup Table</div>
       <table class="gd-tbl">
+        <tr><td>Title</td><td><code>jt_ipam_table</code></td></tr>
+        <tr><td>Description</td><td>{{ t("settings.system.graylog_g_lt_desc") }}</td></tr>
+        <tr><td>Name</td><td><code>jt_ipam_table</code></td></tr>
         <tr><td>Data Adapter</td><td>{{ t("settings.system.graylog_g_pick_adapter") }}</td></tr>
         <tr><td>Cache</td><td>{{ t("settings.system.graylog_g_pick_cache") }}</td></tr>
         <tr><td>Default single value</td><td>{{ t("settings.system.graylog_g_leave_empty") }}</td></tr>
+        <tr><td>Default multi value</td><td>{{ t("settings.system.graylog_g_leave_empty") }}</td></tr>
       </table>
 
       <!-- 步驟 2A：Extractor -->

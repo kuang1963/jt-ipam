@@ -4,6 +4,13 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.4.104] — 2026-06-07
+
+### 修正
+- Graylog DSV 對照表端點改為每個 IP 只輸出一次。同一個 IP 可能存在於多個（重疊）
+  子網路，原本會產生重複列，導致 Graylog「DSV File from HTTP」資料配接器報
+  「Multiple entries with same key」。現已依 IP 去重（依排序取第一筆）。
+
 ## [0.4.103] — 2026-06-07
 
 ### 變更
