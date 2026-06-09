@@ -148,8 +148,10 @@ onMounted(() => { loadServers(); load(); });
 
       <n-space align="center" :wrap="true">
         <n-select v-model:value="serverId" :options="serverOptions" style="width: 150px"
+                  :consistent-menu-width="false"
                   :placeholder="t('dns_records.all_servers')" @update:value="load" />
         <n-select v-model:value="rtype" :options="typeOptions" style="width: 110px"
+                  :consistent-menu-width="false"
                   :placeholder="t('dns_records.all_types')" @update:value="load" />
         <n-input v-model:value="q" clearable style="width: 170px" :placeholder="t('dns_records.search_ph')"
                  @keyup.enter="load">

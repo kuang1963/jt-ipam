@@ -1840,7 +1840,7 @@
   },
   "dns_records": {
     "title": "DNS 記錄",
-    "intro": "顯示從整合 DNS Server 取回的記錄。可搜尋、用 IP 反查對應記錄，或只看「指向的 IP 在 IPAM 中找不到對應位址」的 A/AAAA 記錄。",
+    "intro": "僅取 A / AAAA / PTR 記錄（用於 IP 位址↔名稱對應）；CNAME、MX、TXT 等其他型別不納入。可依伺服器 / 型別篩選、搜尋、用 IP 反查對應記錄，或只看「指向的 IP 在 IPAM 中找不到對應位址」的 A/AAAA 記錄。",
     "search_ph": "搜尋名稱 / 內容",
     "ip_lookup_ph": "輸入 IP 反查記錄",
     "only_missing": "僅顯示無對應 IP",

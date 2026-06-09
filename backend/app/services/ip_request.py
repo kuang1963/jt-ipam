@@ -82,13 +82,18 @@ async def _deliver_to_approvers(
     """把一則通知送給一組審核人：站內鈴鐺 + （若 Email 管道啟用）寄信。Best-effort。"""
     import logging
 
+    from html import escape as _esc
+
+    from app.core.config import get_settings
     from app.services.email import EmailNotConfigured, send_email_via_config
     from app.services.system_config import get_notification_channels
 
     log = logging.getLogger("ip_request")
     if not approvers:
         return
-    link = f"/requests/{request.id}"
+    link = f"/requests/{request.id}"  # 站內鈴鐺用相對路徑（前端 router 解析）
+    # Email 用絕對網址：未登入點了會先被導去登入頁，登入成功再回到此審核頁（router next 機制）
+    abs_link = str(get_settings().app_public_url).rstrip("/") + link
     for u in approvers:
         await push_notification(
             session, user_id=u.id, severity="info", title=title, body=body,
@@ -100,16 +105,29 @@ async def _deliver_to_approvers(
         ch = {}
     if not ch.get("email_enabled"):
         return
+    purpose = (request.purpose or "").strip() or "(未填)"
     text = (
-        f"{body}\n\n用途：{(request.purpose or '').strip() or '(未填)'}\n"
-        f"請登入 jt-ipam 後到「IP 申請」審核：{link}\n"
+        f"{body}\n\n用途：{purpose}\n\n"
+        f"點此前往審核（若尚未登入會先導向登入頁，登入後自動返回）：\n{abs_link}\n"
+    )
+    body_html = (
+        f"<div style=\"font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;color:#1f2328\">"
+        f"<p>{_esc(body)}</p>"
+        f"<p style=\"color:#57606a\">用途：{_esc(purpose)}</p>"
+        f"<p style=\"margin:20px 0\">"
+        f"<a href=\"{_esc(abs_link)}\" "
+        f"style=\"display:inline-block;background:#2f7d4f;color:#fff;text-decoration:none;"
+        f"padding:9px 18px;border-radius:6px;font-weight:600\">前往審核</a></p>"
+        f"<p style=\"color:#8b949e;font-size:12px\">若尚未登入會先導向登入頁，登入成功後自動返回此審核頁。"
+        f"按鈕無法點選時，請複製此連結：<br>{_esc(abs_link)}</p></div>"
     )
     for u in approvers:
         if not u.email:
             continue
         try:
             await send_email_via_config(
-                ch, to=u.email, subject=f"[jt-ipam] {title}：{subnet.cidr}", body_text=text,
+                ch, to=u.email, subject=f"[jt-ipam] {title}：{subnet.cidr}",
+                body_text=text, body_html=body_html,
             )
         except (EmailNotConfigured, Exception) as exc:  # noqa: BLE001 — best-effort
             log.warning("approver email to %s failed: %s", u.email, exc)

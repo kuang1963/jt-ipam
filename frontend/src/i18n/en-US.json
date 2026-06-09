@@ -1842,7 +1842,7 @@
   },
   "dns_records": {
     "title": "DNS Records",
-    "intro": "Records pulled from integrated DNS servers. Search, look up records by IP, or show only A/AAAA records whose target IP has no matching address in IPAM.",
+    "intro": "Only A / AAAA / PTR records (for IP↔name mapping); other types like CNAME, MX, TXT are not included. Filter by server / type, search, look up records by IP, or show only A/AAAA records whose target IP has no matching address in IPAM.",
     "search_ph": "Search name / value",
     "ip_lookup_ph": "Look up records by IP",
     "only_missing": "Only without matching IP",
