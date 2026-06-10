@@ -8,6 +8,7 @@
 import { h, onMounted, onUnmounted } from "vue";
 import { useMessage } from "naive-ui";
 import { useI18n } from "vue-i18n";
+import { RefreshIcon } from "@/icons";
 
 let prompted = false; // 全分頁只提醒一次，避免洗版
 
@@ -43,7 +44,8 @@ export function useVersionCheck() {
                 onClick: () => window.location.reload(),
               },
               [
-                h("span", { style: "font-size:15px" }, "🔄"),
+                h("span", { style: "display:inline-flex;width:16px;height:16px;flex:0 0 auto" },
+                  h(RefreshIcon)),
                 h("span", t("update.banner")),
               ],
             ),
