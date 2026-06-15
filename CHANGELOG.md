@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.174] — 2026-06-15
+
+### Changed
+- **Hid the `jitsi` and `coturn` cert-distribution service types** from the deploy-profile picker for now —
+  docker-jitsi-meet is not officially supported yet, so those options are no longer offered in the UI or
+  listed in the docs (the dormant agent profile code is kept for easy re-enable later). Also refreshed the
+  docs gallery (added a certificate-distribution screenshot) and the feature map's certificate-vault branch.
+
 ## [0.4.173] — 2026-06-15
 
 ### Added

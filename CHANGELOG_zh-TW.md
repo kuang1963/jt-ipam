@@ -4,6 +4,13 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.4.174] — 2026-06-15
+
+### 變更
+- **暫時隱藏 `jitsi` 與 `coturn` 兩個憑證派送服務類型**——docker-jitsi-meet 尚未正式支援，故服務選單與文件
+  都不再列出這兩項（代理端的 profile 程式碼保留為休眠狀態，日後要重新開放很容易）。同時更新文件「畫面導覽」
+  （新增一張憑證派送截圖）與功能地圖的「憑證集中保管與派送」分支。
+
 ## [0.4.173] — 2026-06-15
 
 ### 新增
