@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.197] — 2026-06-18
+
+### Added
+- **Cert-distribution agents can link to a device.** The agent edit dialog gains a "Linked device" picker
+  (`cert_agents.device_id`, migration 0080, SET NULL on device delete). Once linked: ① the agent **name**
+  in the distribution-agents list and the **Advanced → Cert distribution status** page becomes a clickable
+  link to that device's detail; ② the **source-IP column** becomes clickable — the backend resolves the
+  agent's reported source IP to its IPAM address (preferring the one attached to the linked device under
+  overlapping ranges) and links to it. Falls back to plain text when there is no linked device or the
+  source IP has no matching address.
+
+### Changed
+- **Graylog DSV guide tweaks.** "Format" (output setting) and "Regenerate token" (the key) are unrelated and
+  no longer share a row. The Extractor and Pipeline are **alternatives** (pick one), not sequential steps —
+  they are now "Method A / Method B" under Step 2 sharing one "log field" input, instead of being numbered
+  Steps 2 and 3. The click-to-copy toast now says "Copied to clipboard".
+
 ## [0.4.196] — 2026-06-18
 
 ### Added
