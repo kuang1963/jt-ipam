@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.192] — 2026-06-18
+
+### Changed
+- **Graylog DSV page reworked into one extensible endpoint table + detail drawer.** Instead of stacking a
+  separate card with two URL boxes per DSV source (which got cluttered as firewalls were added), all DSV
+  endpoints (IP→hostname plus each firewall's rule and alias lookups) now appear in a single table
+  (name / mapping / status / actions); clicking "Details" opens a drawer with the HTTPS + intranet-HTTP
+  URLs, copy buttons, and per-source settings (the IP→hostname enable/path live there). The shared format
+  and token sit above the table. New DSV types only need a row in the source list, so the layout scales.
+
 ## [0.4.191] — 2026-06-18
 
 ### Added
