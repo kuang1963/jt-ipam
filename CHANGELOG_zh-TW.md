@@ -4,6 +4,17 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.4.191] — 2026-06-18
+
+### 新增
+- **OPNsense 防火牆 Graylog DSV（規則 label→alias、alias→成員）。** 除了既有的 IP→主機名稱 DSV，每台
+  OPNsense 防火牆可再對外提供兩支 token 保護的查表給 Graylog 補實防火牆 log：
+  `/api/v1/lookup/firewall/{id}/rule-aliases`（key=filterlog `rid`／pf 規則 label，value=該規則引用的
+  alias 名）與 `/api/v1/lookup/firewall/{id}/aliases`（key=alias 名，value=成員清單）。規則對照每輪同步從
+  `/api/diagnostics/firewall/pf_statistics/rules` 解析（涵蓋使用者／外掛／自動規則）；別名 DSV 用已同步的
+  alias 內容。每台防火牆用新的「提供防火牆 DSV」開關啟用（整合 → OPNsense），各自的查表網址（不同 path）
+  顯示在 Graylog DSV 設定頁。Migration 0078（opnsense_rule_labels ＋ opnsense_firewalls.expose_dsv）。
+
 ## [0.4.190] — 2026-06-17
 
 ### 變更

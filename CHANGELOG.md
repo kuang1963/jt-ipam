@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.191] — 2026-06-18
+
+### Added
+- **OPNsense firewall Graylog DSV (rule label → alias, and alias → members).** In addition to the existing
+  IP→hostname DSV, each OPNsense firewall can now expose two token-protected lookup tables for Graylog to
+  enrich firewall logs: `/api/v1/lookup/firewall/{id}/rule-aliases` (key = filterlog `rid` / pf rule
+  label, value = the alias names that rule references) and `/api/v1/lookup/firewall/{id}/aliases`
+  (key = alias name, value = member list). The rule-label map is parsed each sync cycle from
+  `/api/diagnostics/firewall/pf_statistics/rules` (covers user + plugin + auto rules); the alias DSV uses
+  the already-synced alias content. Enable per firewall with the new "Expose firewall DSV" toggle
+  (Integrations → OPNsense); the lookup URLs (per firewall, distinct paths) appear on the Graylog DSV
+  settings page. Migration 0078 (opnsense_rule_labels + opnsense_firewalls.expose_dsv).
+
 ## [0.4.190] — 2026-06-17
 
 ### Changed
