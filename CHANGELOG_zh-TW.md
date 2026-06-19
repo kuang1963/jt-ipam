@@ -4,6 +4,12 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.4.206] — 2026-06-19
+
+### 變更
+- **Graylog DSV 設定頁的「格式」與「權杖」改成左右兩張卡片**（各自有框 / 淡底 / 圓角），視覺上明顯分開、
+  窄螢幕自動換行，取代原本上下堆疊的排版。
+
 ## [0.4.205] — 2026-06-19
 
 ### 修正

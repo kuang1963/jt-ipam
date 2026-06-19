@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.206] — 2026-06-19
+
+### Changed
+- **Graylog DSV settings: "Format" and "Token" are now two side-by-side cards** (each bordered / tinted /
+  rounded) for a clear, tidy separation, wrapping on narrow screens — replacing the stacked layout.
+
 ## [0.4.205] — 2026-06-19
 
 ### Fixed
