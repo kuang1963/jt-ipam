@@ -4,6 +4,15 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.4.204] — 2026-06-19
+
+### 新增
+- **可選的 Docker Compose 部署**（`deploy/docker/`）。次要 / 可選方式（主力仍是 systemd + apt）：
+  一組 compose 起 `postgres`(pgvector) / `redis` / `backend` / `sync`（背景同步迴圈取代 systemd timer）/
+  `web`(nginx，服務前端 + 反代 `/api` + 自簽 HTTPS)。附 `gen-env.sh`（產生隨機密鑰）與 `update.sh`
+  （`git pull` → 重建 → 重啟）。**升版只要 `./update.sh`**——backend 容器啟動時自動跑 `alembic upgrade head`，
+  不需手動遷移。已實測：映像可建置、fresh pgvector 跑完 0001→0080 全部遷移、自動建管理員、uvicorn 正常啟動。
+
 ## [0.4.203] — 2026-06-18
 
 ### 變更

@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.4.204] — 2026-06-19
+
+### Added
+- **Optional Docker Compose deployment** (`deploy/docker/`). A secondary / optional path (systemd + apt
+  remains the primary one): one compose file brings up `postgres` (pgvector) / `redis` / `backend` / `sync`
+  (a background sync loop replacing the systemd timer) / `web` (nginx serving the frontend + reverse-proxying
+  `/api` + self-signed HTTPS). Ships `gen-env.sh` (random secrets) and `update.sh` (`git pull` → rebuild →
+  restart). **Upgrading is just `./update.sh`** — the backend container runs `alembic upgrade head` on start,
+  so there's no manual migration step. Verified end-to-end: images build, a fresh pgvector runs all
+  migrations 0001→0080, the admin is auto-created, and uvicorn boots.
+
 ## [0.4.203] — 2026-06-18
 
 ### Changed
