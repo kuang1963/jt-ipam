@@ -39,6 +39,11 @@ based on [Keep a Changelog](https://keepachangelog.com/); versions track
 - **Richer version page.** Adds asyncssh / aardwolf / Pillow package versions, a **host environment**
   section (OS / kernel / nginx / Node.js / PostgreSQL) and **frontend framework** versions
   (Vue / Naive UI / Vite…), with a reorganized layout.
+- **Expose MCP to external systems (read-only).** New toggle under Admin → LLM / AI; only when on does
+  jt-ipam accept external HTTP MCP calls (`/api/mcp`, Streamable HTTP / JSON-RPC). Generate/regenerate a
+  **read-only** API key (stored encrypted); the page shows the endpoint URL and auth header. The
+  read-only key always blocks the 6 data-changing tools (and hides them from the tool list). Off by
+  default (deny-by-default); existing per-user API-token auth still works and is also gated by the toggle.
 
 ### Changed
 - Advanced → Connections lists SSH/RDP/VNC targets together; the OS column now resolves through the same

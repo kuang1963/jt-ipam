@@ -8,14 +8,14 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   NCard, NSpace, NIcon, NAlert, NSwitch, NInput, NInputNumber, NSelect, NButton, NTag,
-  useMessage,
+  NPopconfirm, useMessage,
 } from "naive-ui";
 import {
-  getLLMConfig, patchLLMConfig, listOllamaModels,
+  getLLMConfig, patchLLMConfig, listOllamaModels, revealMcpKey, rotateMcpKey,
   type LLMConfig, type LLMConfigPatch, type OllamaModel,
 } from "@/api/system";
 import { listMcpTools, type McpTool } from "@/api/chat";
-import { SettingsIcon, RefreshIcon, ToolsIcon } from "@/icons";
+import { SettingsIcon, RefreshIcon, ToolsIcon, KeyIcon } from "@/icons";
 
 const { t } = useI18n();
 const msg = useMessage();
@@ -89,6 +89,31 @@ function patch(p: LLMConfigPatch) {
       msg.error(e?.response?.data?.detail ?? t("errors.server"));
     }
   }, 600);
+}
+
+// 對外提供 MCP（讓其它系統呼叫）
+const mcpKey = ref<string | null>(null);   // 已揭示的明文（null＝未揭示）
+const mcpKeyBusy = ref(false);
+const mcpUrl = computed(() => `${window.location.origin}/api/mcp`);
+async function doRevealKey() {
+  mcpKeyBusy.value = true;
+  try { mcpKey.value = await revealMcpKey(); }
+  catch { msg.error(t("errors.server")); }
+  finally { mcpKeyBusy.value = false; }
+}
+async function doRotateKey() {
+  mcpKeyBusy.value = true;
+  try {
+    mcpKey.value = await rotateMcpKey();
+    if (llm.value) llm.value.mcp_api_key_set = true;
+    msg.success(t("common.saved"));
+  } catch { msg.error(t("errors.server")); }
+  finally { mcpKeyBusy.value = false; }
+}
+async function copyText(s: string | null) {
+  if (!s) return;
+  try { await navigator.clipboard.writeText(s); msg.success(t("common.copied_clipboard")); }
+  catch { /* ignore */ }
 }
 
 // MCP / AI 工具清單
@@ -184,6 +209,76 @@ onMounted(() => { void load(); void loadTools(); });
     <p v-else style="opacity: 0.7">{{ t("common.loading") }}</p>
   </n-card>
 
+  <!-- 對外提供 MCP：讓其它系統（外部 LLM 客戶端 / 自動化）以 HTTP 呼叫本站 MCP -->
+  <n-card v-if="llm" style="margin-top:16px">
+    <template #header>
+      <n-space align="center" :wrap-item="false">
+        <n-icon :size="20"><KeyIcon /></n-icon>
+        <span>{{ t("llm_settings.mcp_ext_title") }}</span>
+      </n-space>
+    </template>
+
+    <div class="row">
+      <label>{{ t("llm_settings.mcp_ext_enable") }}</label>
+      <n-switch :value="llm.mcp_external_enabled"
+                @update:value="(v: boolean) => patch({ mcp_external_enabled: v })" />
+    </div>
+    <p class="hint">{{ t("llm_settings.mcp_ext_hint") }}</p>
+
+    <template v-if="llm.mcp_external_enabled">
+      <!-- 連線資訊：外部系統要填的 URL / 傳輸 / 認證標頭 -->
+      <div class="mcp-info">
+        <div class="mcp-info-row">
+          <span class="mcp-k">{{ t("llm_settings.mcp_url") }}</span>
+          <code class="mcp-v">{{ mcpUrl }}</code>
+          <n-button size="tiny" @click="copyText(mcpUrl)">{{ t("common.copy") }}</n-button>
+        </div>
+        <div class="mcp-info-row">
+          <span class="mcp-k">{{ t("llm_settings.mcp_transport") }}</span>
+          <code class="mcp-v">Streamable HTTP（JSON-RPC 2.0, POST）</code>
+        </div>
+        <div class="mcp-info-row">
+          <span class="mcp-k">{{ t("llm_settings.mcp_auth_header") }}</span>
+          <code class="mcp-v">X-Auth-Token: &lt;API KEY&gt;</code>
+          <span class="mcp-or">{{ t("llm_settings.mcp_or") }}</span>
+          <code class="mcp-v">Authorization: Bearer &lt;API KEY&gt;</code>
+        </div>
+      </div>
+
+      <!-- API 金鑰（唯讀範圍） -->
+      <div class="mcp-key">
+        <div class="row" style="align-items:flex-start">
+          <label>{{ t("llm_settings.mcp_key") }}</label>
+          <div style="flex:1;min-width:0">
+            <n-space align="center" :size="8" :wrap-item="false" style="flex-wrap:wrap">
+              <code v-if="mcpKey" class="mcp-keyval">{{ mcpKey }}</code>
+              <n-tag v-else-if="llm.mcp_api_key_set" size="small" :bordered="false">••••••••••••（{{ t("llm_settings.mcp_key_hidden") }}）</n-tag>
+              <n-tag v-else size="small" type="warning" :bordered="false">{{ t("llm_settings.mcp_key_none") }}</n-tag>
+
+              <n-button v-if="llm.mcp_api_key_set && !mcpKey" size="small" :loading="mcpKeyBusy" @click="doRevealKey">
+                {{ t("llm_settings.mcp_key_reveal") }}
+              </n-button>
+              <n-button v-if="mcpKey" size="small" @click="copyText(mcpKey)">{{ t("common.copy") }}</n-button>
+
+              <n-popconfirm v-if="llm.mcp_api_key_set" @positive-click="doRotateKey">
+                <template #trigger>
+                  <n-button size="small" type="warning" ghost :loading="mcpKeyBusy">
+                    {{ t("llm_settings.mcp_key_rotate") }}
+                  </n-button>
+                </template>
+                {{ t("llm_settings.mcp_key_rotate_confirm") }}
+              </n-popconfirm>
+              <n-button v-else size="small" type="primary" :loading="mcpKeyBusy" @click="doRotateKey">
+                {{ t("llm_settings.mcp_key_generate") }}
+              </n-button>
+            </n-space>
+            <p class="hint">{{ t("llm_settings.mcp_key_hint") }}</p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </n-card>
+
   <n-card style="margin-top:16px">
     <template #header>
       <n-space align="center" :wrap-item="false">
@@ -234,4 +329,18 @@ label {
 .tool-param { font-size: 11px; background: rgba(128,128,128,0.1); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, monospace; }
 .tool-param .req { color: #d03050; margin-left: 1px; }
 .tool-param em { opacity: 0.55; font-style: normal; margin-left: 4px; }
+/* 對外 MCP 卡片 */
+.row { display: flex; align-items: center; gap: 12px; }
+.row > label { margin-bottom: 0; }
+.mcp-info { margin: 14px 0 4px; border: 1px solid var(--n-border-color, #eee); border-radius: 8px;
+  padding: 10px 12px; background: rgba(128,128,128,0.04); }
+.mcp-info-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 4px 0; font-size: 13px; }
+.mcp-k { min-width: 96px; opacity: 0.65; font-size: 12.5px; }
+.mcp-v { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+  background: rgba(128,128,128,0.12); border-radius: 5px; padding: 2px 7px; word-break: break-all; }
+.mcp-or { opacity: 0.5; font-size: 12px; }
+.mcp-key { margin-top: 14px; }
+.mcp-keyval { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+  background: rgba(24,160,88,0.12); border: 1px solid rgba(24,160,88,0.3); border-radius: 6px;
+  padding: 3px 8px; word-break: break-all; }
 </style>

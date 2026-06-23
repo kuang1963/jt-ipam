@@ -31,6 +31,10 @@
   連線中熱改解析度，故改以重連取得相符解析度）。
 - **版本資訊頁強化。** 新增 asyncssh / aardwolf / Pillow 等套件版本、**本機環境**（作業系統 / 核心 /
   nginx / Node.js / PostgreSQL）與**前端框架**（Vue / Naive UI / Vite…）版本，並重整版面分區。
+- **對外提供 MCP（唯讀）。** 管理 → LLM / AI 新增開關，打開後其它系統才能以 HTTP 呼叫本站 MCP
+  （`/api/mcp`，Streamable HTTP / JSON-RPC）；可產生 / 重新產生**唯讀** API 金鑰（加密保存），頁面顯示
+  連線網址與認證標頭。唯讀金鑰一律擋下 6 個會異動資料的工具、工具清單也隱藏它們。預設關閉（deny by
+  default）；既有 per-user API 權杖認證仍可用，且同受此開關控管。
 
 ### 變更
 - 進階→連線管理 一併列出 SSH/RDP/VNC 目標；OS 欄改用與詳情頁相同的來源優先序解析；操作鈕只在欄寬
