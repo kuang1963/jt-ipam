@@ -4,6 +4,47 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.1] — 2026-06-24
+
+### Added
+- **RDP / VNC "send keys".** Send special key combos the browser/OS would otherwise intercept (Esc, Tab,
+  F1–F12, Ctrl + Alt + Del, ⊞ Win, Alt + Tab; VNC adds macOS ⌘ combos) from a keycap-styled menu with
+  per-platform icons.
+- **RDP "refit".** One click reconnects at the current window size for a crisp native picture (aardwolf
+  cannot hot-resize a live session, so it rebuilds the session to match).
+- **Richer version page.** Adds asyncssh / aardwolf / Pillow package versions, a host-environment section
+  (OS / kernel / nginx / Node.js / PostgreSQL) and frontend-framework versions (Vue / Naive UI / Vite…),
+  with a reorganized layout.
+- **Expose MCP to external systems (read-only).** New toggle under Admin → LLM / AI; only when on does
+  jt-ipam accept external HTTP MCP calls (`/api/mcp`, Streamable HTTP / JSON-RPC). Generate/regenerate a
+  **read-only** API key (stored encrypted); the page shows the endpoint URL and auth header (name → value).
+  The read-only key always blocks the 6 data-changing tools (and hides them from the tool list). Off by
+  default (deny-by-default); existing per-user API-token auth still works and is also gated by the toggle.
+- New MCP tool `list_connection_targets` (read-only): lists IPs/devices with a browser remote console
+  enabled (SSH / RDP / VNC) that the caller may reach — never returns credentials.
+
+### Changed
+- Console toolbar: a protocol label (SSH / RDP / VNC) sits next to the hostname; buttons are more compact
+  and clearly clickable, with a red-outline disconnect. In Advanced → Connections and on IP detail, the
+  console action buttons collapse to icon-only only when too narrow (threshold scales with the protocols
+  per row).
+- The relationship graph now shows the PVE node a VM runs on (and that node's rack/room) when a host is a
+  Proxmox VM guest — on both the IP and device detail pages.
+
+### Fixed
+- **Proxmox VMs with the same name in one cluster could not be imported (issue #8).** The VM uniqueness
+  key changed from `(cluster, name)` to `(cluster, VMID)` (migration 0085) — Proxmox allows same-named VMs
+  with different VMIDs, which previously collided with `vm_cluster_name_uq`.
+- **AI chat: recover tool calls emitted as text.** A (tool-capable) model occasionally returns a tool call
+  as inline text instead of structured `tool_calls`; these are now parsed and executed instead of leaking
+  into the answer, with a neutral retry notice when unrecoverable.
+- The external MCP sub-app no longer serves FastAPI's auto-generated `/openapi.json` and `/docs` (MCP is
+  discovered via JSON-RPC `tools/list`, not OpenAPI; that schema was meaningless to MCP clients and
+  unauthenticated).
+- Audit detail shows `switch_port` as `device@port` (consistent with other pages) and resolves credential
+  targets to a label instead of a raw UUID.
+
+
 ## [0.5.0] — 2026-06-22
 
 ### Added
@@ -31,40 +72,14 @@ based on [Keep a Changelog](https://keepachangelog.com/); versions track
   simply disabled. The backend detects availability and the UI hides the entry points when absent.
 - The shared **per-user encrypted credential vault** now stores SSH / RDP / VNC credentials
   (`protocol` + optional `domain`); credential audit records carry the protocol (e.g. `rdp_credential`).
-- **RDP / VNC "send keys".** Send special key combos the browser/OS would otherwise intercept (Esc, Tab,
-  F1–F12, Ctrl + Alt + Del, ⊞ Win, Alt + Tab; VNC adds macOS ⌘ combos) from a keycap-styled menu with
-  per-platform icons.
-- **RDP "refit".** One click reconnects at the current window size for a crisp native picture (aardwolf
-  cannot hot-resize a live session, so it rebuilds the session to match).
-- **Richer version page.** Adds asyncssh / aardwolf / Pillow package versions, a **host environment**
-  section (OS / kernel / nginx / Node.js / PostgreSQL) and **frontend framework** versions
-  (Vue / Naive UI / Vite…), with a reorganized layout.
-- **Expose MCP to external systems (read-only).** New toggle under Admin → LLM / AI; only when on does
-  jt-ipam accept external HTTP MCP calls (`/api/mcp`, Streamable HTTP / JSON-RPC). Generate/regenerate a
-  **read-only** API key (stored encrypted); the page shows the endpoint URL and auth header. The
-  read-only key always blocks the 6 data-changing tools (and hides them from the tool list). Off by
-  default (deny-by-default); existing per-user API-token auth still works and is also gated by the toggle.
-- New MCP tool `list_connection_targets` (read-only): lists IPs/devices with a browser remote console
-  enabled (SSH / RDP / VNC) that the caller may connect to — returns ip, hostname, device and which
-  protocols are enabled; never returns credentials.
 
 ### Changed
-- Advanced → Connections lists SSH/RDP/VNC targets together; the OS column now resolves through the same
-  source-precedence as the detail page; action buttons collapse to icon-only only when the column is too
-  narrow (threshold scales with the protocols per row), and IP-detail console buttons do likewise on
-  narrow cards.
-- Console toolbar: a protocol label (SSH / RDP / VNC) sits next to the hostname; buttons are more compact
-  and clearly clickable, with the disconnect button as a red outline.
+- Advanced → Connections lists SSH/RDP/VNC targets together; the OS column resolves through the same
+  source-precedence as the detail page.
 - nginx WebSocket-upgrade location widened to cover the SSH/RDP/VNC console paths; the upgrade path
   patches existing sites in place.
 
 ### Fixed
-- **Proxmox VMs with the same name in one cluster could not be imported (issue #8).** The VM uniqueness
-  key changed from `(cluster, name)` to `(cluster, VMID)` (migration 0085) — Proxmox allows same-named VMs
-  with different VMIDs, which previously collided with `vm_cluster_name_uq`.
-- The external MCP sub-app no longer serves FastAPI's auto-generated `/openapi.json` and `/docs` (MCP is
-  discovered via JSON-RPC `tools/list`, not OpenAPI; that schema was meaningless to MCP clients and
-  unauthenticated).
 - Audit detail shows `switch_port` as `device@port` (consistent with other pages) and resolves credential
   targets to a label instead of a raw UUID.
 

@@ -4,6 +4,37 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.1] — 2026-06-24
+
+### 新增
+- **RDP / VNC「送出按鍵」。** 連線中可送出被瀏覽器或作業系統攔截的特殊組合鍵（Esc、Tab、F1～F12、
+  Ctrl + Alt + Del、⊞ Win、Alt + Tab；VNC 另含 macOS ⌘ 組合），選單以鍵帽樣式呈現並依平台帶 icon。
+- **RDP「重新調整大小」。** 連線中按一下即以目前視窗大小重新連線、取得原生清晰畫面（aardwolf 無法
+  連線中熱改解析度，故改以重連取得相符解析度）。
+- **版本資訊頁強化。** 新增 asyncssh / aardwolf / Pillow 等套件版本、本機環境（作業系統 / 核心 /
+  nginx / Node.js / PostgreSQL）與前端框架（Vue / Naive UI / Vite…）版本，並重整版面分區。
+- **對外提供 MCP（唯讀）。** 管理 → LLM / AI 新增開關，打開後其它系統才能以 HTTP 呼叫本站 MCP
+  （`/api/mcp`，Streamable HTTP / JSON-RPC）；可產生 / 重新產生**唯讀** API 金鑰（加密保存），頁面以
+  「名稱 → 值」顯示連線網址與認證標頭。唯讀金鑰一律擋下 6 個會異動資料的工具、工具清單也隱藏它們。
+  預設關閉（deny by default）；既有 per-user API 權杖認證仍可用，且同受此開關控管。
+- 新增 MCP 工具 `list_connection_targets`（唯讀）：列出已啟用瀏覽器遠端連線（SSH / RDP / VNC）且呼叫者
+  可連線的 IP / 裝置——絕不回帳密。
+
+### 變更
+- 連線主控工具列：主機名稱右側加協定標籤（SSH / RDP / VNC）；按鈕改精簡且更明顯可按、中斷連線改紅色外框。
+  進階→連線管理 與 IP 詳細資料的連線按鈕，只在欄寬不足時才收成 icon（門檻隨該列連線種類數放大）。
+- 主機為 Proxmox VM 客體時，關係圖會畫出它所在的 PVE 節點（及該節點的機櫃/機房）——IP 與裝置詳情頁皆是。
+
+### 修正
+- **Proxmox 同一叢集內同名 VM 無法匯入（issue #8）。** VM 唯一鍵由 `(叢集, 名稱)` 改為 `(叢集, VMID)`
+  （migration 0085）——Proxmox 允許同名不同 VMID 的 VM，原本會撞 `vm_cluster_name_uq` 而匯入失敗。
+- **AI 對話：還原被當成文字吐出的工具呼叫。** 支援工具呼叫的模型偶發把呼叫寫成文字（而非結構化
+  `tool_calls`）→ 改為解析並執行（不再把那段亂碼當答案顯示）；無法還原時顯示中性的重試提示。
+- 對外 MCP 子應用不再提供 FastAPI 自動產生的 `/openapi.json`、`/docs`（MCP 以 JSON-RPC `tools/list`
+  探索工具，非 OpenAPI；該 schema 對 MCP client 無意義且未經認證）。
+- 稽核明細的 `switch_port` 顯示為 `device@port`（與其他頁一致）；憑證目標解析為 label 而非原始 UUID。
+
+
 ## [0.5.0] — 2026-06-22
 
 ### 新增
@@ -25,30 +56,12 @@
   ".[rdp]"`）；無 wheel 即快速失敗、功能自動停用。後端偵測可用性，未安裝時前端隱藏入口。
 - 共用的**個人加密憑證金庫**現可保管 SSH / RDP / VNC 帳密（`protocol` + 選填 `domain`）；憑證稽核
   記錄帶協定（如 `rdp_credential`）。
-- **RDP / VNC「送出按鍵」。** 連線中可送出被瀏覽器或作業系統攔截的特殊組合鍵（Esc、Tab、F1～F12、
-  Ctrl + Alt + Del、⊞ Win、Alt + Tab；VNC 另含 macOS ⌘ 組合），選單以鍵帽樣式呈現並依平台帶 icon。
-- **RDP「重新調整大小」。** 連線中按一下即以目前視窗大小重新連線、取得原生清晰畫面（aardwolf 無法
-  連線中熱改解析度，故改以重連取得相符解析度）。
-- **版本資訊頁強化。** 新增 asyncssh / aardwolf / Pillow 等套件版本、**本機環境**（作業系統 / 核心 /
-  nginx / Node.js / PostgreSQL）與**前端框架**（Vue / Naive UI / Vite…）版本，並重整版面分區。
-- **對外提供 MCP（唯讀）。** 管理 → LLM / AI 新增開關，打開後其它系統才能以 HTTP 呼叫本站 MCP
-  （`/api/mcp`，Streamable HTTP / JSON-RPC）；可產生 / 重新產生**唯讀** API 金鑰（加密保存），頁面顯示
-  連線網址與認證標頭。唯讀金鑰一律擋下 6 個會異動資料的工具、工具清單也隱藏它們。預設關閉（deny by
-  default）；既有 per-user API 權杖認證仍可用，且同受此開關控管。
-- 新增 MCP 工具 `list_connection_targets`（唯讀）：列出已啟用瀏覽器遠端連線（SSH / RDP / VNC）且呼叫者
-  可連線的 IP / 裝置——回 ip、主機名稱、裝置與各協定旗標，絕不回帳密。
 
 ### 變更
-- 進階→連線管理 一併列出 SSH/RDP/VNC 目標；OS 欄改用與詳情頁相同的來源優先序解析；操作鈕只在欄寬
-  不足時才收成 icon（門檻隨該列連線種類數放大），IP 詳細資料卡片過窄時連線鈕同樣縮為 icon。
-- 連線主控工具列：主機名稱右側加協定標籤（SSH / RDP / VNC）；按鈕改精簡且更明顯可按、中斷連線改紅色外框。
+- 進階→連線管理 一併列出 SSH/RDP/VNC 目標；OS 欄改用與詳情頁相同的來源優先序解析。
 - nginx WebSocket upgrade location 拓寬涵蓋 SSH/RDP/VNC 主控路徑；升級會就地修補既有站台設定。
 
 ### 修正
-- **Proxmox 同一叢集內同名 VM 無法匯入（issue #8）。** VM 唯一鍵由 `(叢集, 名稱)` 改為 `(叢集, VMID)`
-  （migration 0085）——Proxmox 允許同名不同 VMID 的 VM，原本會撞 `vm_cluster_name_uq` 而匯入失敗。
-- 對外 MCP 子應用不再提供 FastAPI 自動產生的 `/openapi.json`、`/docs`（MCP 以 JSON-RPC `tools/list`
-  探索工具，非 OpenAPI；該 schema 對 MCP client 無意義且未經認證）。
 - 稽核明細的 `switch_port` 顯示為 `device@port`（與其他頁一致）；憑證目標解析為 label 而非原始 UUID。
 
 ## [0.4.210] — 2026-06-21
