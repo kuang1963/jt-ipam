@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.6] — 2026-06-26
+
+### Changed
+- **Anomaly detection page reorganized into tabs.** The four detectors (IP conflicts / MAC drift / ghost
+  IPs / unauthorized IPs) are now tabs instead of one long stacked page.
+- **Each anomaly table now has a column picker**, and the internal `ip_address_id` UUID column is hidden by
+  default (still selectable).
+
+### Added
+- **MAC drift now also shows the matching IP / hostname** for each drifting MAC (resolved from IPAM, with
+  ARP fallback) — so you can tell which host a roaming MAC belongs to.
+
+
 ## [0.5.5] — 2026-06-26
 
 ### Added

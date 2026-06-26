@@ -4,6 +4,16 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.6] — 2026-06-26
+
+### 變更
+- **異常偵測頁改成頁籤。** 四種偵測（IP 衝突／MAC 漂移／失聯 IP／未授權 IP）改用頁籤呈現，不再同一頁一直往下堆疊。
+- **每個異常表格都可挑欄位**，內部用的 `ip_address_id`（UUID）欄位預設隱藏（仍可在「欄位」勾選）。
+
+### 新增
+- **MAC 漂移加上對應 IP／主機名稱**（從 IPAM 解析、ARP 補位）—— 一眼看出漂移的 MAC 是哪台主機。
+
+
 ## [0.5.5] — 2026-06-26
 
 ### 新增
