@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.24] — 2026-06-27
+
+### Fixed
+- **Device detail page: Edit now opens the dialog in-place** (it used to jump to the device list). The device
+  edit dialog is now a shared `DeviceEditModal` component.
+- **Virtualization VM table filter:** a numeric query (e.g. `102`) no longer matches internal fields such as
+  `memory_mb` (1024) — the quick filter now only matches the **displayed columns** (name / VMID / node / IP /
+  MAC / status), and matches inside IP/MAC lists.
+
+
 ## [0.5.23] — 2026-06-27
 
 ### Fixed / Changed

@@ -4,6 +4,14 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.24] — 2026-06-27
+
+### 修正
+- **裝置詳情頁：「編輯」改為就地開視窗**（原本會跳到裝置清單）。裝置編輯視窗抽成共用元件 `DeviceEditModal`。
+- **虛擬化 VM 表格篩選：** 輸入數字（如 `102`）不再誤中 `memory_mb`（1024）等內部欄位 —— 快速篩選現在只比對
+  **顯示中的欄位**（名稱／VMID／節點／IP／MAC／狀態），且會比對 IP/MAC 清單裡的每一筆。
+
+
 ## [0.5.23] — 2026-06-27
 
 ### 修正／變更
