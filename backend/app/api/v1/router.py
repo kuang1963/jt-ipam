@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     devices,
     dns,
     firewall,
+    pfsense,
     import_external,
     ip_changes,
     ip_requests,
@@ -113,6 +114,7 @@ api_v1_router.include_router(physical.router)
 api_v1_router.include_router(topology.router)
 api_v1_router.include_router(plugins.router)
 api_v1_router.include_router(firewall.router)
+api_v1_router.include_router(pfsense.router)
 api_v1_router.include_router(wazuh.router)
 api_v1_router.include_router(audit.router)
 api_v1_router.include_router(users.router)

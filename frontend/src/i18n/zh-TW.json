@@ -278,7 +278,8 @@
     "oui_admin": "MAC 製造商 (OUI)",
     "system_admin": "系統管理員",
     "system_logs": "系統記錄",
-    "graylog_dsv": "整合 Graylog"
+    "graylog_dsv": "整合 Graylog",
+    "pfsense": "整合 pfSense"
   },
   "topbar": {
     "search": "搜尋…",
@@ -2430,5 +2431,18 @@
     "lines": "行數",
     "download": "下載",
     "empty": "（無記錄）"
+  },
+  "pfsense_admin": {
+    "title": "整合 pfSense",
+    "create": "新增 pfSense",
+    "alias": "別名",
+    "aliases": "別名數",
+    "syncs": "同步項目",
+    "sync_interval": "同步間隔（秒）",
+    "scope_subnets": "限定子網路範圍",
+    "scope_all": "留空＝全域比對",
+    "name_url_required": "請填名稱與 API URL",
+    "key_required": "請填 API key",
+    "api_hint": "pfSense CE 2.8.x 無內建 REST API：請在 pfSense 安裝 pfSense-pkg-RESTAPI 套件（pfrest.org），到 System → REST API → Settings 把「API Key」加進認證方式（auth methods），再到 Keys 建一把 key。base path /api/v2、以 X-API-Key 認證；憑證自簽請關閉 Verify TLS。"
   }
 }

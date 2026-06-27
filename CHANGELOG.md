@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.11] — 2026-06-27
+
+### Added
+- **pfSense integration (Phase 1)** — a separate integration with its own settings page (Admin →
+  pfSense), independent of OPNsense. pfSense CE has no built-in REST API, so this connects via the
+  third-party **pfSense-pkg-RESTAPI** package (pfrest.org): base path `/api/v2`, `X-API-Key` auth. It pulls
+  the **ARP table** and **DHCP leases** to stamp IP liveness / MAC / hostname within scoped subnets
+  (overlap-safe), and reads **firewall aliases**. Per-instance sync toggles (DHCP off by default to avoid
+  clashing with another DHCP server), subnet scoping, verify-TLS, test-connection and sync-now; runs in the
+  periodic sync loop. `pfsense` is registered as a hostname/ARP source. Verified end-to-end against pfSense
+  CE 2.8.1. (migration 0087; firewall rules / NAT / Graylog-DSV are planned for Phase 2.)
+
+
 ## [0.5.10] — 2026-06-27
 
 ### Fixed

@@ -4,6 +4,17 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.11] — 2026-06-27
+
+### 新增
+- **pfSense 整合（Phase 1）**——獨立的整合、有自己的設定頁（管理 → pfSense），與 OPNsense 完全分開。pfSense CE
+  沒有內建 REST API，因此走第三方 **pfSense-pkg-RESTAPI** 套件（pfrest.org）：base path `/api/v2`、`X-API-Key`
+  認證。會拉 **ARP 表**與 **DHCP 租約**，在限定的子網路範圍內 stamp IP 存活 / MAC / 主機名稱（重疊網段安全），
+  並讀取**防火牆別名**。每台可分別開關同步（DHCP 預設關，避免與另一台 DHCP 衝突）、可限定子網路、Verify TLS、
+  測試連線與立即同步；接進每 5 分鐘的定期同步。`pfsense` 已登錄為名稱／ARP 來源。已對 pfSense CE 2.8.1 端到端
+  驗證通過。（migration 0087；防火牆規則／NAT／Graylog DSV 留待 Phase 2。）
+
+
 ## [0.5.10] — 2026-06-27
 
 ### 修正

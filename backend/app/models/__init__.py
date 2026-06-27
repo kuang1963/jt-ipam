@@ -34,6 +34,7 @@ from app.models.firewall import (
     OPNsenseSyncedAlias,
 )
 from app.models.firewall_rule import OPNsenseRule
+from app.models.pfsense import PfSenseFirewall, PfSenseSyncedAlias
 from app.models.ip_change_log import IPChangeLog
 from app.models.ip_hostname import IPHostnameObservation
 from app.models.ip_request import IPRequest, IPRequestEvent, IPRequestStageApproval
@@ -118,6 +119,8 @@ __all__ = [
     "OPNsenseFirewall",
     "OPNsenseRuleLabel",
     "OPNsenseSyncedAlias",
+    "PfSenseFirewall",
+    "PfSenseSyncedAlias",
     "Permission",
     "PhpIPAMMigrationMapping",
     "PowerFeed",

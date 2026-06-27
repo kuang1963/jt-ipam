@@ -278,7 +278,8 @@
     "oui_admin": "MAC Vendors (OUI)",
     "system_admin": "System administrator",
     "system_logs": "System logs",
-    "graylog_dsv": "Graylog integration"
+    "graylog_dsv": "Graylog integration",
+    "pfsense": "pfSense"
   },
   "topbar": {
     "search": "Search…",
@@ -2432,5 +2433,18 @@
     "lines": "lines",
     "download": "Download",
     "empty": "(no logs)"
+  },
+  "pfsense_admin": {
+    "title": "pfSense",
+    "create": "Add pfSense",
+    "alias": "Aliases",
+    "aliases": "Aliases",
+    "syncs": "Syncs",
+    "sync_interval": "Sync interval (s)",
+    "scope_subnets": "Limit to subnets",
+    "scope_all": "Empty = global match",
+    "name_url_required": "Name and API URL are required",
+    "key_required": "API key is required",
+    "api_hint": "pfSense CE 2.8.x has no built-in REST API. Install the pfSense-pkg-RESTAPI package (pfrest.org), then under System → REST API → Settings add \"API Key\" to the auth methods and create a key under Keys. Base path /api/v2, X-API-Key auth; turn off Verify TLS for a self-signed cert."
   }
 }
