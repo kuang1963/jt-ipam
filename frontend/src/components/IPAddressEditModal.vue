@@ -622,8 +622,12 @@ async function remove() {
             <!-- PVE 主控台連線按鈕（noVNC/xterm；僅在該 IP 是 PVE VM/CT 且有權限時顯示），右上小標 PVE -->
             <span v-if="props.address?.novnc_available" key="hx-novnc" class="conn-beta-wrap">
               <n-button-group>
-                <n-button type="warning" size="small" :title="t('novnc.connect')" @click="emit('novnc-open')">
-                  <template #icon><n-icon><DisplayIcon /></n-icon></template>
+                <n-button type="warning" size="small"
+                          :title="`${props.address?.pve?.kind === 'ct' ? 'xterm' : 'noVNC'} ${t('novnc.connect')}`"
+                          @click="emit('novnc-open')">
+                  <template #icon>
+                    <n-icon><TerminalIcon v-if="props.address?.pve?.kind === 'ct'" /><DisplayIcon v-else /></n-icon>
+                  </template>
                   <span v-if="!consoleCompact">{{ props.address?.pve?.kind === 'ct' ? 'xterm' : 'noVNC' }}</span>
                 </n-button>
                 <n-dropdown trigger="click" :options="novncMenuOptions" @select="onNovncMenu">

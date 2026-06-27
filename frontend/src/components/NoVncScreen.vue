@@ -1,14 +1,19 @@
 <script setup lang="ts">
 /**
- * PVE 主控台（noVNC / xterm）。連線時要求輸入 PVE 帳密（可選擇存進金庫，比照 ssh/rdp/vnc）；
- * kind=vm → @novnc/novnc 圖形 RFB；kind=ct → xterm.js + PVE term 協定。WS 走同站後端代理到 PVE。
+ * PVE 主控台（noVNC / xterm）。版面與工具列比照 SSH/RDP/VNC。
+ * 連線時要求輸入 PVE 帳密（可選擇存進金庫）；kind=vm → @novnc/novnc 圖形 RFB（可送出按鍵、縮放切換）；
+ * kind=ct → xterm.js + PVE term 協定。WS 走同站後端代理到 PVE。
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import {
-  NSpin, NButton, NIcon, NSelect, NInput, NCheckbox, NAlert, NTag, useMessage,
+  NCard, NSpin, NButton, NButtonGroup, NDropdown, NIcon, NSelect, NInput, NSwitch, NAlert, NTag,
+  NForm, NFormItem, NSpace, NPopconfirm, useMessage,
 } from "naive-ui";
-import { LoginIcon, LogoutIcon } from "@/icons";
+import {
+  VncIcon, DeleteIcon, CancelIcon, KeyIcon, ExpandIcon, ReduceIcon, ChevronDownIcon,
+} from "@/icons";
+import { buildSendKeysMenu } from "@/composables/useSendKeys";
 import {
   requestNovncTicket, buildNovncWsUrl, listPveCredentials, createPveCredential,
   deletePveCredential, type PveCredential,
@@ -26,8 +31,8 @@ const props = withDefaults(defineProps<{
 const { t } = useI18n();
 const msg = useMessage();
 
-type Phase = "idle" | "connecting" | "connected" | "error";
-const phase = ref<Phase>("idle");
+type Phase = "form" | "connecting" | "connected" | "error";
+const phase = ref<Phase>("form");
 const errorMsg = ref("");
 
 const form = ref({ username: "", password: "", realm: "pam" });
@@ -36,13 +41,15 @@ const realmOpts = [
   { label: "ad (Active Directory)", value: "ad" }, { label: "ldap (LDAP)", value: "ldap" },
 ];
 const remember = ref(false);
-const rememberLabel = ref("");
 const savedCreds = ref<PveCredential[]>([]);
 const selectedCredId = ref<string | null>(null);
+const protoLabel = computed(() => (props.kind === "ct" ? "xterm" : "noVNC"));
+const isVm = computed(() => props.kind === "vm");
 
 const screenBox = ref<HTMLDivElement | null>(null);
-let rfb: any = null;            // @novnc/novnc RFB（vm）
-let ws: WebSocket | null = null; // xterm WS（ct）
+const scaleMode = ref<"fit" | "native">("fit");
+let rfb: any = null;
+let ws: WebSocket | null = null;
 let term: any = null;
 let fitAddon: any = null;
 let heartbeat: number | null = null;
@@ -65,22 +72,19 @@ function cleanup() {
 }
 onBeforeUnmount(cleanup);
 
-function utf8len(s: string): number {
-  return new TextEncoder().encode(s).length;
-}
+function utf8len(s: string): number { return new TextEncoder().encode(s).length; }
 
 async function connect() {
   errorMsg.value = "";
   phase.value = "connecting";
-
-  // 可選擇記住帳密（存金庫 protocol='pve'）
   let credId: string | null = selectedCredId.value;
   if (!credId && remember.value) {
     try {
       const saved = await createPveCredential({
-        label: rememberLabel.value.trim() || `pve@${props.ip}`,
+        label: `pve@${props.ip}`,
         target_ip_id: props.addressId,
-        username: `${form.value.username.trim()}@${form.value.realm}`.replace(/@.*@/, "@"),
+        username: form.value.username.includes("@") ? form.value.username.trim()
+          : `${form.value.username.trim()}@${form.value.realm}`,
         password: form.value.password,
       });
       credId = saved.id;
@@ -90,7 +94,6 @@ async function connect() {
       return;
     }
   }
-
   let ticket;
   try {
     ticket = await requestNovncTicket(props.addressId, credId
@@ -101,8 +104,7 @@ async function connect() {
     errorMsg.value = e?.response?.data?.detail || t("novnc.err_ticket");
     return;
   }
-  form.value.password = "";  // 立即清掉
-
+  form.value.password = "";
   const wsUrl = buildNovncWsUrl(ticket.ws_path, ticket.ticket);
   await nextTick();
   if (ticket.kind === "vm") await connectRfb(wsUrl, ticket.vnc_password);
@@ -115,12 +117,13 @@ async function connectRfb(wsUrl: string, password: string) {
     const RFB = (await import("@novnc/novnc")).default;
     if (screenBox.value) screenBox.value.innerHTML = "";
     rfb = new RFB(screenBox.value, wsUrl, { credentials: { password } });
-    rfb.scaleViewport = true;
+    rfb.scaleViewport = scaleMode.value === "fit";
+    rfb.clipViewport = false;
     rfb.background = "#000";
     rfb.addEventListener("connect", () => { phase.value = "connected"; });
     rfb.addEventListener("disconnect", (e: any) => {
-      if (phase.value === "connected" && e?.detail?.clean) phase.value = "idle";
-      else if (phase.value !== "idle") { phase.value = "error"; errorMsg.value = errorMsg.value || t("novnc.err_disconnected"); }
+      if (phase.value === "connected" && e?.detail?.clean) phase.value = "form";
+      else if (phase.value !== "form") { phase.value = "error"; errorMsg.value = errorMsg.value || t("novnc.err_disconnected"); }
       cleanup();
     });
     rfb.addEventListener("securityfailure", (e: any) => {
@@ -141,33 +144,25 @@ async function connectXterm(wsUrl: string, pveUser: string, vncticket: string) {
     fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     if (screenBox.value) { screenBox.value.innerHTML = ""; term.open(screenBox.value); fitAddon.fit(); }
-
     ws = new WebSocket(wsUrl, "binary");
     ws.binaryType = "arraybuffer";
     const enc = new TextEncoder();
     let authed = false;
-    ws.onopen = () => {
-      // PVE term 協定：先送 "user:ticket\n" 認證
-      ws!.send(enc.encode(`${pveUser}:${vncticket}\n`));
-    };
+    ws.onopen = () => { ws!.send(enc.encode(`${pveUser}:${vncticket}\n`)); };
     ws.onmessage = (ev) => {
-      const buf = ev.data instanceof ArrayBuffer ? new Uint8Array(ev.data)
-        : enc.encode(String(ev.data));
+      const buf = ev.data instanceof ArrayBuffer ? new Uint8Array(ev.data) : enc.encode(String(ev.data));
       if (!authed) {
-        // 認證回應 "OK" → 進入終端機；之後直接寫資料
-        authed = true;
-        phase.value = "connected";
-        const cols = term.cols, rows = term.rows;
-        ws!.send(enc.encode(`1:${cols}:${rows}:`));
+        authed = true; phase.value = "connected";
+        ws!.send(enc.encode(`1:${term.cols}:${term.rows}:`));
+        term.focus();
         term.onData((d: string) => ws?.send(enc.encode(`0:${utf8len(d)}:${d}`)));
         heartbeat = window.setInterval(() => { try { ws?.send(enc.encode("2")); } catch { /* noop */ } }, 30000);
-        // 認證回應那一包通常是 "OK"，不寫進畫面
         return;
       }
       term.write(buf);
     };
     ws.onerror = () => { if (phase.value !== "connected") { phase.value = "error"; errorMsg.value = t("novnc.err_connect"); } };
-    ws.onclose = () => { if (phase.value === "connected") phase.value = "idle"; cleanup(); };
+    ws.onclose = () => { if (phase.value === "connected") phase.value = "form"; cleanup(); };
     window.addEventListener("resize", onResize);
   } catch (e: any) {
     phase.value = "error"; errorMsg.value = e?.message || t("novnc.err_connect");
@@ -182,95 +177,168 @@ function onResize() {
 }
 onBeforeUnmount(() => window.removeEventListener("resize", onResize));
 
-function disconnect() { phase.value = "idle"; errorMsg.value = ""; cleanup(); }
+// ── 縮放：自動縮放（fit）/ 原始解析度（native，1:1 可捲動）──
+function setScale(m: "fit" | "native") {
+  scaleMode.value = m;
+  if (rfb) rfb.scaleViewport = m === "fit";
+}
 
-async function removeCred(id: string) {
-  try { await deletePveCredential(id); await loadCreds(); if (selectedCredId.value === id) selectedCredId.value = null; }
+// ── 送出特殊按鍵（僅圖形 RFB 用，透過 @novnc/novnc 的 sendKey/sendCtrlAltDel）──
+const sendKeysMenu = buildSendKeysMenu(false);
+const KS: Record<string, number> = {
+  ctrl: 0xffe3, alt: 0xffe9, win: 0xffeb, esc: 0xff1b, tab: 0xff09,
+};
+function rfbCombo(mods: number[], keysym: number) {
+  if (!rfb) return;
+  for (const m of mods) rfb.sendKey(m, null, true);
+  rfb.sendKey(keysym, null, true);
+  rfb.sendKey(keysym, null, false);
+  for (const m of [...mods].reverse()) rfb.sendKey(m, null, false);
+}
+function onSendKey(key: string) {
+  if (!rfb) return;
+  if (key === "cad") rfb.sendCtrlAltDel();
+  else if (key === "esc") rfbCombo([], KS.esc);
+  else if (key === "tab") rfbCombo([], KS.tab);
+  else if (key === "win") rfbCombo([], KS.win);
+  else if (key === "alttab") rfbCombo([KS.alt], KS.tab);
+  else if (key === "ctrlesc") rfbCombo([KS.ctrl], KS.esc);
+  else if (/^f\d+$/.test(key)) rfbCombo([], 0xffbe + (parseInt(key.slice(1), 10) - 1));
+}
+
+function disconnect() { phase.value = "form"; errorMsg.value = ""; cleanup(); }
+
+async function removeCred() {
+  if (!selectedCredId.value) return;
+  try { await deletePveCredential(selectedCredId.value); await loadCreds(); selectedCredId.value = null; }
   catch { msg.error(t("errors.network")); }
 }
 </script>
 
 <template>
-  <div class="nv-wrap" :class="{ 'nv-full': fullHeight }">
-    <!-- 連線表單 -->
-    <div v-if="phase === 'idle' || phase === 'error'" class="nv-form">
-      <div class="nv-title">
-        <n-tag size="small" type="warning" :bordered="false">PVE</n-tag>
-        <n-tag size="small" :bordered="false">{{ kind === "vm" ? "noVNC" : "xterm" }}</n-tag>
-        <span class="nv-target">{{ hostname || deviceName || ip }} · {{ ip }}</span>
-      </div>
-      <n-alert v-if="phase === 'error'" type="error" :show-icon="true" style="margin-bottom: 10px">
-        {{ errorMsg }}
-      </n-alert>
-      <n-alert type="info" :show-icon="true" size="small" style="margin-bottom: 12px">
-        {{ t("novnc.cred_hint") }}
-      </n-alert>
+  <div class="vnc-wrap" :class="{ 'vnc-full': fullHeight, 'vnc-center': fullHeight && phase === 'form' }">
+    <!-- 連線設定表單（版面比照 SSH/RDP/VNC）-->
+    <div v-if="phase === 'form' || phase === 'error'" class="vnc-form">
+      <n-card size="small" :bordered="true">
+        <template #header>
+          <span style="display:flex;align-items:center;gap:8px">
+            <n-icon :component="VncIcon" :size="18" />
+            <span>{{ t("novnc.connect_to", { ip }) }}</span>
+            <n-tag size="small" type="warning" :bordered="false" round>PVE</n-tag>
+            <n-tag size="small" :bordered="false" round>{{ protoLabel }}</n-tag>
+          </span>
+        </template>
+        <n-alert v-if="phase === 'error'" type="error" :show-icon="true" style="margin-bottom:12px">
+          {{ errorMsg }}
+        </n-alert>
 
-      <div v-if="savedCreds.length" class="nv-row">
-        <label>{{ t("novnc.saved_cred") }}</label>
-        <div style="display:flex; gap:6px; width:100%">
-          <n-select v-model:value="selectedCredId" :options="credOptions" clearable
+        <!-- 已存 PVE 帳密 -->
+        <div v-if="credOptions.length" class="vnc-saved-row">
+          <span class="vnc-saved-label">{{ t("novnc.saved_cred") }}</span>
+          <n-select v-model:value="selectedCredId" :options="credOptions" clearable size="small"
                     :placeholder="t('novnc.use_typed')" style="flex:1" />
-          <n-button v-if="selectedCredId" quaternary type="error" size="small"
-                    @click="removeCred(selectedCredId)">{{ t("common.delete") }}</n-button>
+          <n-popconfirm v-if="selectedCredId" @positive-click="removeCred">
+            <template #trigger>
+              <n-button quaternary type="error" size="small">
+                <template #icon><n-icon :component="DeleteIcon" /></template>
+              </n-button>
+            </template>
+            {{ t("common.confirm_delete") }}
+          </n-popconfirm>
         </div>
-      </div>
 
-      <template v-if="!selectedCredId">
-        <div class="nv-row">
-          <label>{{ t("novnc.username") }}</label>
-          <n-input v-model:value="form.username" placeholder="root" />
-        </div>
-        <div class="nv-row">
-          <label>{{ t("novnc.realm") }}</label>
-          <n-select v-model:value="form.realm" :options="realmOpts" style="width: 220px" />
-        </div>
-        <div class="nv-row">
-          <label>{{ t("novnc.password") }}</label>
-          <n-input v-model:value="form.password" type="password" show-password-on="click"
-                   @keyup.enter="connect" />
-        </div>
-        <div class="nv-row">
-          <n-checkbox v-model:checked="remember">{{ t("novnc.remember") }}</n-checkbox>
-          <n-input v-if="remember" v-model:value="rememberLabel" size="small"
-                   :placeholder="t('novnc.remember_label')" style="max-width: 240px" />
-        </div>
-      </template>
+        <n-form label-placement="left" :label-width="92" size="small">
+          <template v-if="!selectedCredId">
+            <n-form-item :label="t('novnc.username')">
+              <n-input v-model:value="form.username" placeholder="root" />
+            </n-form-item>
+            <n-form-item :label="t('novnc.password')">
+              <n-input v-model:value="form.password" type="password" show-password-on="click"
+                       :placeholder="t('common.please_enter')" @keyup.enter="connect" />
+            </n-form-item>
+            <n-form-item :label="t('novnc.realm')">
+              <n-select v-model:value="form.realm" :options="realmOpts" />
+            </n-form-item>
+            <n-form-item :label="t('novnc.remember')">
+              <n-switch v-model:value="remember" />
+            </n-form-item>
+          </template>
 
-      <n-button type="primary" :disabled="!selectedCredId && (!form.username || !form.password)"
-                @click="connect" style="margin-top: 8px">
-        <template #icon><n-icon><LoginIcon /></n-icon></template>{{ t("novnc.connect") }}
-      </n-button>
+          <n-alert :show-icon="false" type="info" style="margin-bottom:10px">
+            {{ t("novnc.no_store_hint") }}
+          </n-alert>
+          <n-space justify="end">
+            <n-button type="primary" :disabled="!selectedCredId && (!form.username || !form.password)"
+                      @click="connect">
+              <template #icon><n-icon :component="VncIcon" /></template>
+              {{ protoLabel }} {{ t("novnc.connect") }}
+            </n-button>
+          </n-space>
+        </n-form>
+      </n-card>
     </div>
 
-    <!-- 連線中 / 已連線 -->
-    <div v-show="phase === 'connecting' || phase === 'connected'" class="nv-stage">
-      <div class="nv-bar">
-        <n-tag size="small" type="warning" :bordered="false">PVE</n-tag>
-        <n-tag size="small" :bordered="false">{{ kind === "vm" ? "noVNC" : "xterm" }}</n-tag>
-        <span class="nv-target">{{ hostname || deviceName || ip }} · {{ ip }}</span>
-        <span style="flex:1"></span>
-        <n-button size="small" quaternary type="error" @click="disconnect">
-          <template #icon><n-icon><LogoutIcon /></n-icon></template>{{ t("novnc.disconnect") }}
-        </n-button>
+    <!-- 連線中 / 已連線（工具列 + 畫面，比照 VNC）-->
+    <div v-show="phase === 'connecting' || phase === 'connected'" class="vnc-screen-area" :class="{ 'vnc-full': fullHeight }">
+      <div class="vnc-toolbar">
+        <span class="vnc-status" :data-state="phase">
+          <n-spin v-if="phase === 'connecting'" :size="12" />
+          <span v-else class="vnc-dot" />
+          <span>{{ t(`novnc.state_${phase}`) }}</span>
+          <span class="vnc-ip">{{ ip }}</span>
+          <n-tag v-if="hostname" size="small" :bordered="false" round>{{ hostname }}</n-tag>
+          <n-tag size="small" type="warning" :bordered="false" round>PVE</n-tag>
+          <n-tag size="small" :bordered="false" round>{{ protoLabel }}</n-tag>
+          <n-tag v-if="deviceName" size="small" type="info" :bordered="false" round>{{ deviceName }}</n-tag>
+        </span>
+        <n-space :size="8" align="center">
+          <!-- 送出按鍵（僅圖形 VM）-->
+          <n-dropdown v-if="phase === 'connected' && isVm" trigger="click" :options="sendKeysMenu"
+                      size="small" @select="onSendKey">
+            <n-button size="tiny">
+              <template #icon><n-icon :component="KeyIcon" /></template>
+              {{ t("vnc.send_keys") }}<n-icon :component="ChevronDownIcon" style="margin-left:2px" />
+            </n-button>
+          </n-dropdown>
+          <!-- 縮放：自動縮放 / 原始解析度（僅圖形 VM）-->
+          <n-button-group v-if="phase === 'connected' && isVm" size="tiny">
+            <n-button :type="scaleMode === 'fit' ? 'primary' : 'default'" @click="setScale('fit')">
+              <template #icon><n-icon :component="ExpandIcon" /></template>{{ t("vnc.scale_fit") }}
+            </n-button>
+            <n-button :type="scaleMode === 'native' ? 'primary' : 'default'" @click="setScale('native')">
+              <template #icon><n-icon :component="ReduceIcon" /></template>{{ t("vnc.scale_native") }}
+            </n-button>
+          </n-button-group>
+          <n-button v-if="phase === 'connected'" size="tiny" type="error" ghost @click="disconnect">
+            <template #icon><n-icon :component="CancelIcon" /></template>{{ t("vnc.disconnect") }}
+          </n-button>
+        </n-space>
       </div>
-      <n-spin v-if="phase === 'connecting'" :show="true" style="margin: 40px auto" />
-      <div ref="screenBox" class="nv-screen" :class="{ 'nv-screen-show': phase === 'connected' }"></div>
+      <div ref="screenBox" class="vnc-canvas-box"
+           :class="{ 'vnc-full': fullHeight, 'vnc-native': scaleMode === 'native' }"></div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.nv-wrap { width: 100%; }
-.nv-full { height: 100%; display: flex; flex-direction: column; }
-.nv-form { max-width: 460px; padding: 4px 2px; }
-.nv-title { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 12px; }
-.nv-target { opacity: .8; font-weight: 500; }
-.nv-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
-.nv-row > label { font-size: 12px; opacity: .75; }
-.nv-stage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.nv-bar { display: flex; align-items: center; gap: 8px; padding: 4px 2px 8px; }
-.nv-screen { flex: 1; min-height: 360px; background: #000; border-radius: 6px; overflow: hidden; }
-.nv-full .nv-screen { min-height: 0; }
-.nv-screen-show { display: block; }
+.vnc-wrap { width: 100%; }
+.vnc-wrap.vnc-full { height: 100%; display: flex; flex-direction: column; }
+.vnc-wrap.vnc-center { justify-content: center; align-items: center; }
+.vnc-wrap.vnc-center .vnc-form { width: 520px; max-width: 92vw; }
+.vnc-form { max-width: 520px; }
+.vnc-saved-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.vnc-saved-label { font-size: 12px; opacity: .75; white-space: nowrap; }
+.vnc-screen-area { display: flex; flex-direction: column; }
+.vnc-screen-area.vnc-full { flex: 1; min-height: 0; }
+.vnc-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; gap: 8px; }
+.vnc-status { font-size: 13px; display: inline-flex; align-items: center; gap: 7px;
+  padding: 3px 11px; border-radius: 999px; font-weight: 500;
+  background: rgba(128, 128, 128, .12); color: #888; }
+.vnc-status[data-state="connected"] { color: #18a058; background: rgba(24,160,88,.12); }
+.vnc-status[data-state="connecting"] { color: #f0a020; background: rgba(240,160,32,.12); }
+.vnc-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+.vnc-ip { opacity: .7; font-variant-numeric: tabular-nums; }
+.vnc-canvas-box { flex: 1; min-height: 360px; background: #000; border-radius: 6px; overflow: hidden; }
+.vnc-canvas-box.vnc-full { min-height: 0; }
+.vnc-canvas-box.vnc-native { overflow: auto; }
 </style>

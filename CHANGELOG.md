@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.23] — 2026-06-27
+
+### Fixed / Changed
+- **PVE console (noVNC/xterm) UI now matches SSH/RDP/VNC.** Same card connect form (帳號 → 密碼 → realm order,
+  short "記住此帳密"), and the connected toolbar gains **send-keys + scale (fit / native) + "中斷連線"** for
+  graphical VM consoles. The connect button uses the right icon/tooltip (noVNC vs xterm), and the
+  connection-type filter no longer truncates "noVNC/xterm".
+- The PVE console toggle now appears on **all of a VM's IPs** — a multi-IP VM resolves via its interface MAC,
+  not only its primary IP.
+- **Global search:** a numeric query (e.g. `227`) is now also treated as a possible Proxmox **VMID** and finds
+  the matching VM/CT; the right-side hint shows "VLAN / VMID" instead of only "vlan_number".
+- **Rack:** the device dialog's "U 位 (起始)" field is wider (the number shows), and the U-position picker now
+  reflects **half-U** occupancy (left/right) — you can place into the free half.
+
+
 ## [0.5.22] — 2026-06-27
 
 ### Added

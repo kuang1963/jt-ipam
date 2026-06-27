@@ -202,8 +202,8 @@ const columns = computed(() =>
       <n-input v-model:value="query" clearable :placeholder="t('common.search')" style="width: 220px">
         <template #prefix><n-icon :component="SearchIcon" /></template>
       </n-input>
-      <n-select v-model:value="typeFilter" :options="typeOptions" clearable
-                :placeholder="t('connections.filter_type')" style="width: 130px" />
+      <n-select v-model:value="typeFilter" :options="typeOptions" clearable :consistent-menu-width="false"
+                :placeholder="t('connections.filter_type')" style="width: 150px" />
       <n-select v-model:value="osFilter" :options="osOptions" clearable
                 :consistent-menu-width="false"
                 :placeholder="t('connections.filter_os')" style="width: 170px" />

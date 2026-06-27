@@ -4,6 +4,19 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.23] — 2026-06-27
+
+### 修正／變更
+- **PVE 主控台（noVNC/xterm）介面對齊 SSH/RDP/VNC。** 一樣的卡片連線表單（帳號 → 密碼 → 認證領域 順序、
+  簡短「記住此帳密」），圖形 VM 主控台的工具列加上**送出按鍵 + 縮放（自動縮放／原始解析度）+「中斷連線」**。
+  連線鈕用對的圖示／提示（noVNC vs xterm），連線類型篩選不再把「noVNC/xterm」截斷。
+- PVE 主控台開關現在會出現在**一台 VM 的所有 IP** 上 —— 多 IP 的 VM 改用網卡 MAC 解析，不再只認主 IP。
+- **全域搜尋：** 純數字（如 `227`）現在也會當成可能的 Proxmox **VMID** 找出對應 VM/CT；右側提示顯示
+  「VLAN / VMID」而非只有「vlan_number」。
+- **機櫃：** 裝置視窗的「U 位 (起始)」欄位加寬（看得到數字），挑選 U 位也正確反映**半 U** 占用（左／右），
+  可放進空的那半。
+
+
 ## [0.5.22] — 2026-06-27
 
 ### 新增

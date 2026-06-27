@@ -202,8 +202,14 @@ function onEnter() {
 function detectedTagType(d: string): "info" | "success" | "warning" | "default" {
   if (d === "cidr" || d === "ip") return "success";
   if (d === "mac") return "info";
-  if (d === "vlan_number") return "warning";
+  if (d === "vlan_number" || d === "number") return "warning";
   return "default";
+}
+function detectedLabel(d: string): string {
+  return ({
+    cidr: "CIDR", ip: "IP", mac: "MAC",
+    number: "VLAN / VMID", vlan_number: "VLAN",
+  } as Record<string, string>)[d] || d;
 }
 </script>
 
@@ -230,7 +236,7 @@ function detectedTagType(d: string): "info" | "success" | "warning" | "default" 
       :type="detectedTagType(detected)"
       style="margin-left: 4px"
     >
-      {{ detected }}
+      {{ detectedLabel(detected) }}
     </n-tag>
   </n-space>
 </template>

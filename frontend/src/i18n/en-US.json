@@ -368,7 +368,8 @@
     "load_more": "Load more",
     "confirm": "Confirm",
     "select": "Select",
-    "download": "Download"
+    "download": "Download",
+    "please_enter": "Please enter"
   },
   "scan_agent": {
     "outdated": "update available",
@@ -2472,7 +2473,7 @@
     "username": "PVE username",
     "password": "PVE password",
     "realm": "Realm",
-    "remember": "Remember these PVE credentials (encrypted in your vault)",
+    "remember": "Remember these credentials",
     "remember_label": "Credential name (optional)",
     "saved_cred": "Saved PVE credentials",
     "use_typed": "Use the credentials typed below",
@@ -2484,6 +2485,10 @@
     "err_auth": "Authentication failed",
     "err_generic": "Cannot open PVE console (this IP is not a PVE VM/CT, or no permission)",
     "enable": "Enable PVE console (noVNC / xterm)",
-    "enable_hint": "This IP maps to a Proxmox VE VM/CT; an in-browser console is available."
+    "enable_hint": "This IP maps to a Proxmox VE VM/CT; an in-browser console is available.",
+    "connect_to": "Connect to {ip}",
+    "state_connecting": "Connecting…",
+    "state_connected": "Connected",
+    "no_store_hint": "Credentials are used only for this session (not stored); you must have Console permission on this VM/CT."
   }
 }

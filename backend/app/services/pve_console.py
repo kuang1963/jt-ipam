@@ -23,7 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.safe_http import UnsafeOutboundURL, safe_request
-from app.models.virt import ProxmoxInstance, VirtCluster, VirtualMachine
+from app.models.virt import ProxmoxInstance, VirtCluster, VirtualMachine, VMInterface
 
 
 class PveConsoleError(Exception):
@@ -55,6 +55,17 @@ async def resolve_pve_target(session: AsyncSession, ip: object) -> PveTarget | N
     vm = (await session.execute(
         select(VirtualMachine).where(VirtualMachine.primary_ip_id == ip_id)
     )).scalars().first()
+    if vm is None:
+        # 後援：用此 IP 的 MAC 對應到 VM 的網卡 —— 涵蓋「一台 VM 多個 IP」時的非主 IP
+        # （resolve 只認 primary_ip_id 會讓 VM 的其他 IP 開不出主控台開關）。
+        mac = getattr(ip, "mac", None)
+        if mac:
+            # MACADDR 欄位 Postgres 原生正規化比對（不需 lower）；以字串傳入由 PG cast。
+            vm_id = (await session.execute(
+                select(VMInterface.vm_id).where(VMInterface.mac == str(mac)).limit(1)
+            )).scalars().first()
+            if vm_id is not None:
+                vm = await session.get(VirtualMachine, vm_id)
     if vm is None or vm.legacy_vmid is None or not vm.node:
         return None
     inst = (await session.execute(
