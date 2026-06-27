@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.21] — 2026-06-27
+
+### Fixed
+- Traditional-Chinese wording: use 內建 / 本機 phrasing instead of the mainland terms 自帶 / 同源 in the map-provider UI text and comments.
+
+
 ## [0.5.20] — 2026-06-27
 
 ### Added / Changed

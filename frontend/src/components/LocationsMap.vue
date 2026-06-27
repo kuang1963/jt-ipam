@@ -3,9 +3,9 @@
  * 機房 / 地點世界地圖 — 依全域「地圖供應商」設定切換兩種模式：
  *
  *  • builtin（預設）/ google → 內建 Natural Earth 陸地輪廓（public domain，已預先投影成 SVG path），
- *    等距圓柱投影標記。**完全自帶、零外部請求**（隔離網路可用、不洩漏、CSP/COEP 最嚴格）。
+ *    等距圓柱投影標記。**完全內建、零外部請求**（隔離網路可用、不洩漏、CSP/COEP 最嚴格）。
  *    （Google 圖磚因服務條款不可代理；頁內預覽用內建圖，外部「開啟」連結才走 Google Maps。）
- *  • osm → OpenStreetMap 圖磚 slippy 視圖，但圖磚走**同源後端代理** `/api/v1/system/map-tile/{z}/{x}/{y}`，
+ *  • osm → OpenStreetMap 圖磚 slippy 視圖，但圖磚走**本機後端代理** `/api/v1/system/map-tile/{z}/{x}/{y}`，
  *    瀏覽器不直連外部 → 維持 CSP `img-src 'self'` + COEP require-corp，ZAP 乾淨。
  */
 import { computed, onMounted, onBeforeUnmount, ref } from "vue";
@@ -57,7 +57,7 @@ const svgMarkers = computed(() => {
   }));
 });
 
-// ─────────── OSM slippy 模式：Web Mercator + 同源圖磚代理 ───────────
+// ─────────── OSM slippy 模式：Web Mercator + 本機圖磚代理 ───────────
 const TILE = 256;
 const lngToWorldX = (lng: number, z: number) => (lng + 180) / 360 * TILE * 2 ** z;
 function latToWorldY(lat: number, z: number): number {
@@ -95,7 +95,7 @@ const tiles = computed(() => {
       const wx = ((tx % n) + n) % n;
       out.push({
         key: `${tx}_${ty}`,
-        src: `/api/v1/system/map-tile/${v.z}/${wx}/${ty}`,   // ← 同源代理
+        src: `/api/v1/system/map-tile/${v.z}/${wx}/${ty}`,   // ← 本機代理
         left: tx * TILE - v.vx0, top: ty * TILE - v.vy0,
       });
     }
@@ -124,7 +124,7 @@ onBeforeUnmount(() => { ro?.disconnect(); });
 
 <template>
   <div v-if="valid.length" ref="boxRef" class="lmap" :style="{ height: boxH + 'px' }">
-    <!-- OSM slippy（同源代理圖磚）-->
+    <!-- OSM slippy（本機代理圖磚）-->
     <template v-if="isSlippy">
       <img v-for="ti in tiles" :key="ti.key" :src="ti.src" class="lmap-tile"
            :style="{ left: ti.left + 'px', top: ti.top + 'px' }" alt="" draggable="false" />

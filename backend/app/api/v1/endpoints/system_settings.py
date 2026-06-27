@@ -304,7 +304,7 @@ async def put_map_provider(
     return MapProviderOut(provider=prov)
 
 
-# 同源地圖圖磚代理（OSM）：讓「OpenStreetMap」供應商在維持嚴格 CSP（img-src 'self'）+ COEP require-corp
+# 本機地圖圖磚代理（OSM）：讓「OpenStreetMap」供應商在維持嚴格 CSP（img-src 'self'）+ COEP require-corp
 # 下仍能在頁內顯示圖磚。URL 由伺服器端組（只連 OSM、z/x/y 驗證為整數範圍）→ 非開放代理、非 SSRF。
 # 供 <img> 載入故不帶 auth header（token 走 Authorization，圖磚標籤帶不了）；由 nginx /api 限流保護。
 # 小型記憶體 LRU 對 OSM 圖磚政策友善（避免重複抓取）。

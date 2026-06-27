@@ -4,12 +4,18 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.21] — 2026-06-27
+
+### 修正
+- 繁體中文用詞：地圖供應商相關文案與註解改用「內建／本機」，不用對岸用語「自帶／同源」。
+
+
 ## [0.5.20] — 2026-06-27
 
 ### 新增／變更
-- **地圖供應商預設改為「內建（離線）」** —— 完全自帶的世界地圖（不對外連線）。管理員仍可在
+- **地圖供應商預設改為「內建（離線）」** —— 完全內建的世界地圖（不對外連線）。管理員仍可在
   設定 → 系統把地點頁預覽切成 **OpenStreetMap** 或 **Google Maps**。
-- **OpenStreetMap 圖磚改走同源後端代理**（`/api/v1/system/map-tile/{z}/{x}/{y}`）：瀏覽器不直連 OSM，
+- **OpenStreetMap 圖磚改走本機後端代理**（`/api/v1/system/map-tile/{z}/{x}/{y}`）：瀏覽器不直連 OSM，
   所以即使管理員選了 OSM，CSP 仍維持 `img-src 'self'` + COEP `require-corp`（ZAP 乾淨）。此代理為受限唯讀
   （URL 由伺服器端組、只連 OSM、圖磚座標驗證、小型記憶體 LRU 快取、nginx 限流）。
 - Google Maps：頁內預覽用內建地圖（Google 圖磚依其條款不可代理）；「在外部開啟」連結才開 Google Maps。
@@ -28,7 +34,7 @@
 ## [0.5.18] — 2026-06-27
 
 ### 安全／變更
-- **地點地圖改為完全自帶、不再嵌入 OpenStreetMap。** 以內建的 Natural Earth 世界輪廓（public domain，本地投影）
+- **地點地圖改為完全內建、不再嵌入 OpenStreetMap。** 以內建的 Natural Earth 世界輪廓（public domain，本地投影）
   取代 OSM 圖磚。地圖現在在隔離／離線網路也能用、**完全不對 OSM 發請求**（不再洩漏管理員正在看哪些站點），也讓
   安全標頭可以收緊：CSP `img-src` 移除 OSM 例外、`Cross-Origin-Embedder-Policy` 升到最強的 **`require-corp`**
   （全站已零跨來源子資源）。nginx proxy snippet 也 `proxy_hide_header` COEP（單一來源）。

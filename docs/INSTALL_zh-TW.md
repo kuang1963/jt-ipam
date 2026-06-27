@@ -57,7 +57,7 @@ cd /opt/jt-ipam
 # 三種 TLS 模式擇一：
 #
 #   nginx         — nginx 終結 HTTPS，後端 loopback；缺憑證時自動產自簽 bootstrap
-#   self-signed   — uvicorn direct 自帶自簽（不裝 nginx；最快上線）
+#   self-signed   — uvicorn direct 內建自簽（不裝 nginx；最快上線）
 #   direct        — uvicorn direct，憑證自備（缺則 fallback 產自簽）
 
 # (A) nginx + 暫用自簽（之後 cp 正式憑證即可）— 推薦生產環境
