@@ -4,6 +4,17 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.14] — 2026-06-27
+
+### 安全
+- **修正 `/api/*` 回應的安全標頭重複 + 過時 CSP**（由已登入 ZAP 掃描發現）。後端 middleware 仍送著 v0.5.8 之前
+  的寬鬆 CSP（`frame-src` 還放行 google／openstreetmap），且在 nginx 之後每個 `/api` 代理回應都帶**兩份**安全標頭
+  （HSTS／CSP／X-Frame-Options／Referrer-Policy／Permissions-Policy／COOP／CORP）——ZAP 報「Strict-Transport-Security
+  multiple header entries」。已把後端 CSP 收成 `frame-src 'self'`（讓 `direct`／`self-signed` 模式也正確），並在 nginx
+  代理 snippet 用 `proxy_hide_header` 把上游的安全標頭擋掉，讓 server 區塊的硬化值成為唯一來源。線上實測：每個標頭各
+  一份、CSP 已收緊。
+
+
 ## [0.5.13] — 2026-06-27
 
 ### 修正

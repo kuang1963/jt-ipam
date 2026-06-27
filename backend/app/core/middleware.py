@@ -25,9 +25,8 @@ _CSP: Final[str] = (
     "img-src 'self' data: blob: https://*.tile.openstreetmap.org; "
     "font-src 'self' data:; "
     "connect-src 'self'; "
-    # 地圖預覽（Location 經緯度）需要內嵌 OSM / Google Maps 的 iframe；
-    # frame-src 只放行這幾個地圖網域，其餘維持 default-src 'self'。
-    "frame-src 'self' https://www.openstreetmap.org https://www.google.com https://maps.google.com; "
+    # 不再內嵌第三方地圖 iframe（v0.5.8 改成新分頁開啟）→ frame-src 收成 'self'
+    "frame-src 'self'; "
     "frame-ancestors 'none'; "
     "base-uri 'self'; "
     "form-action 'self';"

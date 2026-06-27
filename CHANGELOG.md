@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.14] — 2026-06-27
+
+### Security
+- **Fixed duplicate security headers + a stale CSP on `/api/*` responses** (found by an authenticated ZAP
+  scan). The backend middleware still emitted the pre-v0.5.8 permissive CSP (`frame-src` allowing
+  google/openstreetmap), and behind nginx every proxied `/api` response carried **two** copies of each
+  security header (HSTS / CSP / X-Frame-Options / Referrer-Policy / Permissions-Policy / COOP / CORP) — ZAP
+  flagged "Strict-Transport-Security multiple header entries". Backend CSP tightened to `frame-src 'self'`
+  (so the `direct`/`self-signed` TLS mode is also correct), and the nginx proxy snippet now
+  `proxy_hide_header`s the upstream's security headers so the server block's hardened values are the single
+  canonical source. Verified live: one of each header, tightened CSP.
+
+
 ## [0.5.13] — 2026-06-27
 
 ### Fixed
