@@ -334,7 +334,7 @@ async function removeCred() {
         </n-space>
       </div>
       <div ref="screenBox" class="vnc-canvas-box"
-           :class="{ 'vnc-full': fullHeight, 'vnc-native': scaleMode === 'native', 'vnc-term': !isVm }"></div>
+           :class="{ 'vnc-full': fullHeight, 'vnc-native': scaleMode === 'native', 'vnc-term': !isVm, 'term-dim': phase === 'closed' }"></div>
     </div>
   </div>
 </template>
@@ -365,4 +365,6 @@ async function removeCred() {
 .vnc-canvas-box.vnc-native { overflow: auto; }
 /* xterm（CT）終端機留一點內距，不要貼齊邊緣（比照 SSH 主控台）*/
 .vnc-canvas-box.vnc-term { padding: 8px; }
+/* 已斷線：整個畫面反灰並停用互動，讓使用者一眼看出已中斷 */
+.term-dim { filter: grayscale(1) brightness(.45); pointer-events: none; transition: filter .25s; }
 </style>

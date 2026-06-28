@@ -425,7 +425,7 @@ onBeforeUnmount(teardown);
         {{ errorMsg }}
       </n-alert>
       <div ref="canvasBoxEl" class="rdp-canvas-box"
-           :class="{ 'rdp-full': fullHeight, 'rdp-fit': scaleMode === 'fit', 'rdp-native': scaleMode !== 'fit' }">
+           :class="{ 'rdp-full': fullHeight, 'rdp-fit': scaleMode === 'fit', 'rdp-native': scaleMode !== 'fit', 'term-dim': phase === 'closed' }">
         <canvas ref="canvasEl" class="rdp-canvas" tabindex="0"
                 @mousemove="onMouseMove" @mousedown="onMouseDown" @mouseup="onMouseUp"
                 @wheel.prevent="onWheel" @contextmenu.prevent
@@ -476,4 +476,6 @@ onBeforeUnmount(teardown);
 .rdp-saved-label { width: 92px; flex: none; box-sizing: border-box; text-align: right;
   padding-right: 12px; font-size: 14px; }
 .rdp-saved-row :deep(.n-button) { margin-left: 6px; }
+/* 已斷線：整個畫面反灰並停用互動，讓使用者一眼看出已中斷 */
+.term-dim { filter: grayscale(1) brightness(.45); pointer-events: none; transition: filter .25s; }
 </style>

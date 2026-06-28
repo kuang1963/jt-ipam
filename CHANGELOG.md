@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.34] — 2026-06-28
+
+### Fixed
+- **RDP clipboard paste: fixed RDP dropping ~10–20s after connecting when the feature was enabled.** When the
+  remote requested our clipboard before any text had been set, aardwolf's cliprdr channel crashed
+  (`'NoneType' object has no attribute 'datatype'`) and tore down the session. We now seed an empty clipboard
+  on connect so `clipboard.data` is never null.
+
+### Changed
+- **All consoles (SSH / RDP / VNC / noVNC / xterm): the display area is greyed out** (grayscale + dimmed,
+  non-interactive) once the session disconnects, so it is obvious the connection is closed.
+
+
 ## [0.5.33] — 2026-06-28
 
 ### Fixed

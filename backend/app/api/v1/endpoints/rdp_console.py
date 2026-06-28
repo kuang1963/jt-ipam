@@ -383,6 +383,13 @@ async def rdp_ws(websocket: WebSocket, address_id: uuid.UUID, ticket: str = "") 
         )
         await send({"type": "status", "state": "connected", "width": width, "height": height})
 
+        if clip_enabled:
+            # 預先放一個空字串到剪貼簿，讓 clipboard.data 不為 None。
+            # 否則被控端一發 CB_FORMAT_DATA_REQUEST（想讀我們的剪貼簿）時，
+            # aardwolf 的 _handle_format_data_request 會存取 None.datatype → 整條 RDP 斷線。
+            with contextlib.suppress(Exception):
+                await conn.set_current_clipboard_text("")
+
         await _bridge(websocket, conn, send, clip_enabled=clip_enabled)
 
     except WebSocketDisconnect:

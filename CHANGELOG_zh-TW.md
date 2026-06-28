@@ -4,6 +4,18 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.34] — 2026-06-28
+
+### 修正
+- **RDP 貼上：修正啟用後 RDP 連上約 10～20 秒就斷線。** 被控端在我們還沒設定任何剪貼簿文字時就來要資料，
+  會讓 aardwolf 的 cliprdr 通道撞 `'NoneType' object has no attribute 'datatype'` 而整條斷線。改成連線時
+  先放一個空字串到剪貼簿，`clipboard.data` 就不會是 null。
+
+### 變更
+- **所有主控台（SSH／RDP／VNC／noVNC／xterm）斷線時，被控端顯示區會反灰**（灰階＋變暗、停用互動），
+  讓使用者一眼看出已中斷。
+
+
 ## [0.5.33] — 2026-06-28
 
 ### 修正
