@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.38] — 2026-06-29
+
+### Changed
+- **pfSense integration page now matches the OPNsense page**: adds a TLS column, a "TLS verification disabled"
+  warning banner when any instance has Verify TLS off, the same in-form TLS warning, and the same action-button
+  order (edit / test / sync / delete).
+- **PVE LXC (xterm) console hint moved into the toolbar** (single line next to the status tags, ellipsis if too
+  long, dismissible) instead of a full-width banner, with shorter wording.
+
+
 ## [0.5.37] — 2026-06-29
 
 ### Added

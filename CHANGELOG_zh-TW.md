@@ -4,6 +4,15 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.38] — 2026-06-29
+
+### 變更
+- **pfSense 整合頁對齊 OPNsense 頁**：新增 TLS 欄位、當有實例關閉 Verify TLS 時顯示「TLS 驗證已停用」警告橫幅、
+  表單內相同的 TLS 警告，以及相同的操作鈕順序（編輯／測試／同步／刪除）。
+- **PVE LXC（xterm）主控台提示移到工具列**（接在狀態標籤右邊、單行、太長以 … 截斷、可關閉），不再佔整行，
+  文字也更精簡。
+
+
 ## [0.5.37] — 2026-06-29
 
 ### 新增
