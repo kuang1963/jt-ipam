@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.45] — 2026-06-29
+
+### Changed
+- **Sections: the "strict mode" toggle (and column) are hidden from the UI.** It was a phpIPAM-compatibility
+  field that jt-ipam never enforced, so the switch did nothing. The field is still stored and round-tripped via
+  the phpIPAM-compatible API / migration (existing values are preserved), just no longer shown as a control.
+
+
 ## [0.5.44] — 2026-06-29
 
 ### Fixed

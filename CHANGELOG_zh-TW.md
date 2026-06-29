@@ -4,6 +4,13 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.45] — 2026-06-29
+
+### 變更
+- **區段：隱藏「嚴格模式」開關（與欄位）。** 那是 phpIPAM 相容欄位、jt-ipam 從未強制，開關按了沒作用。欄位仍會
+  儲存並透過 phpIPAM 相容 API／遷移原樣保留（既有值不動），只是不再以開關呈現。
+
+
 ## [0.5.44] — 2026-06-29
 
 ### 修正
