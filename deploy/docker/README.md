@@ -18,8 +18,8 @@ Prerequisites: **git** and **Docker Engine with the `docker compose` v2 plugin**
 
 ```bash
 sudo apt-get remove -y docker.io docker-compose podman-docker   # if you installed those
+sudo apt-get update && sudo apt-get install -y curl git         # get.docker.com needs curl
 curl -fsSL https://get.docker.com | sudo sh                     # Docker Engine + compose plugin
-sudo apt-get install -y git
 docker compose version                                          # verify the v2 plugin is present
 ```
 

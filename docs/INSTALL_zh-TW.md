@@ -214,9 +214,10 @@ curl -skI https://ipam.example.com/ \
 非 Debian 系發行版請用各自的套件管理員裝 git。
 
 ```bash
-# 前置：安裝 git + Docker Engine（含 compose 外掛）
+# 前置：先裝 curl/git，再裝 Docker Engine（含 compose 外掛）
+sudo apt-get update && sudo apt-get install -y curl git
 curl -fsSL https://get.docker.com | sudo sh
-sudo apt-get install -y git
+docker compose version         # 應印出 v2.x
 
 # 先 git clone 取得專案——gen-env.sh / docker-compose.yml 都在 repo 的 deploy/docker/ 內
 git clone https://github.com/jasoncheng7115/jt-ipam.git

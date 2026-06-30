@@ -674,9 +674,10 @@
       </p>
 
       <h3 class="dz-h3"><span class="zh">安裝</span><span class="en">Install</span></h3>
-      <pre><span class="zh"># 前置：安裝 git + Docker Engine（含 compose 外掛）</span><span class="en"># prerequisites: git + Docker Engine (incl. the compose plugin)</span>
+      <pre><span class="zh"># 前置：先裝 curl/git，再裝 Docker Engine（含 compose 外掛）</span><span class="en"># prerequisites: curl/git first, then Docker Engine (incl. the compose plugin)</span>
+sudo apt-get update &amp;&amp; sudo apt-get install -y curl git
 curl -fsSL https://get.docker.com | sudo sh
-sudo apt-get install -y git
+docker compose version          <span class="zh"># 應印出 v2.x</span><span class="en"># should print v2.x</span>
 
 git clone https://github.com/jasoncheng7115/jt-ipam.git
 cd jt-ipam/deploy/docker &amp;&amp; ./gen-env.sh &amp;&amp; <span class="g">docker compose up -d --build</span></pre>

@@ -15,8 +15,8 @@
 
 ```bash
 sudo apt-get remove -y docker.io docker-compose podman-docker   # 若你裝過這些
+sudo apt-get update && sudo apt-get install -y curl git         # get.docker.com 需要 curl
 curl -fsSL https://get.docker.com | sudo sh                     # Docker Engine + compose 外掛
-sudo apt-get install -y git
 docker compose version                                          # 確認 v2 外掛已就緒
 ```
 

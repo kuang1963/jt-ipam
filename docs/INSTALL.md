@@ -222,9 +222,10 @@ Prerequisites: **git** and **Docker Engine with the `docker compose` v2 plugin**
 subcommand. On non-Debian distros install git with your own package manager.
 
 ```bash
-# prerequisites: git + Docker Engine (incl. the compose plugin)
+# prerequisites: curl/git first, then Docker Engine (incl. the compose plugin)
+sudo apt-get update && sudo apt-get install -y curl git
 curl -fsSL https://get.docker.com | sudo sh
-sudo apt-get install -y git
+docker compose version         # should print v2.x
 
 # clone the repo first — gen-env.sh / docker-compose.yml live inside it under deploy/docker/
 git clone https://github.com/jasoncheng7115/jt-ipam.git
