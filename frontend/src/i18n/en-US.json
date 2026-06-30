@@ -1156,7 +1156,13 @@
     "unknown": "unknown",
     "ipv6_pending": "IPv6 / non-standard CIDR visualization is coming in Phase 2",
     "empty": "No registered addresses in this subnet yet",
-    "agg_hint": "Aggregated view for large subnets: each block is a /24, only blocks containing addresses are shown (with used count and usage %)"
+    "agg_hint": "Aggregated view for large subnets: each block is a /24, only blocks containing addresses are shown (with used count and usage %)",
+    "tip_online": "Detected within the last {grace} min (scan agent / LibreNMS / DNS)",
+    "tip_stale": "Last seen {grace}–{staleMax} min ago — possibly a missed scan or flapping, not yet counted offline",
+    "tip_offline": "No detection for over {staleMax} min; or registered with scanning enabled but never seen",
+    "tip_reserved": "Manually marked as reserved",
+    "tip_unknown": "Liveness unknown: ping is excluded for this IP, or its subnet has scanning disabled",
+    "tip_free": "This IP is not registered yet (unallocated)"
   },
   "tasks": {
     "title": "Tasks",

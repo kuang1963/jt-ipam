@@ -1154,7 +1154,13 @@
     "unknown": "未知",
     "ipv6_pending": "IPv6 / 非標準 CIDR 視覺方塊圖將於 Phase 2 補上",
     "empty": "此網段尚無已登記位址",
-    "agg_hint": "大網段聚合顯示：每格為一個 /24 區塊，僅列出有已登記位址的區塊（顯示已用數與使用率）"
+    "agg_hint": "大網段聚合顯示：每格為一個 /24 區塊，僅列出有已登記位址的區塊（顯示已用數與使用率）",
+    "tip_online": "最近 {grace} 分鐘內有偵測到回應（掃描代理／LibreNMS／DNS）",
+    "tip_stale": "超過 {grace} 分鐘、但 {staleMax} 分鐘內仍曾出現過 —— 可能剛漏掃或網路抖動，尚未判定為離線",
+    "tip_offline": "超過 {staleMax} 分鐘無任何偵測記錄；或已登記且有啟用掃描卻從未偵測到",
+    "tip_reserved": "狀態手動標記為「保留」",
+    "tip_unknown": "無從判定存活：此 IP 刻意略過 Ping 偵測，或所屬子網路未啟用掃描",
+    "tip_free": "此 IP 尚未登記（未配發）"
   },
   "tasks": {
     "title": "作業",

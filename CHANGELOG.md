@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.57] — 2026-06-30
+
+### Added
+- **IP heatmap legend now has hover tooltips** explaining each state (online / recently-seen / offline /
+  reserved / unknown / idle), including the actual liveness thresholds. "Recently seen" = last detected between
+  the online threshold (default 30 min) and 4× that (default 2 h) — likely a missed scan or flapping.
+
+
 ## [0.5.56] — 2026-06-30
 
 ### Fixed
