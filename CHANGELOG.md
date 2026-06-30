@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.55] — 2026-06-30
+
+### Fixed
+- **IP request approval now writes the request's hostname and purpose onto the allocated IP.** The hostname is
+  recorded as a **manual** hostname observation (top precedence, so a later scan/sync won't overwrite it) and the
+  purpose is saved to the IP's **note**. (The description was already copied.) Applies to both direct and
+  multi-stage approval (both fulfil through the same path).
+
+
 ## [0.5.54] — 2026-06-30
 
 ### Changed
