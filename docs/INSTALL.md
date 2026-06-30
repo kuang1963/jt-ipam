@@ -46,6 +46,8 @@ sudo systemctl reboot
 Fastest: one-shot bootstrap (auto-clones to /opt/jt-ipam, then runs the unified deploy script; install flags can be passed through):
 
 ```bash
+# prerequisite: a minimal system may not ship curl (the one-liner needs it)
+sudo apt-get update && sudo apt-get install -y curl
 curl -fsSL https://raw.githubusercontent.com/jasoncheng7115/jt-ipam/main/scripts/bootstrap.sh \
   | sudo bash -s -- --tls-mode nginx --public-fqdn ipam.example.com
 ```

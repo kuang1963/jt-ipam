@@ -44,6 +44,8 @@ sudo systemctl reboot
 最快：一鍵 bootstrap（自動 clone 到 /opt/jt-ipam 後執行統一部署腳本，可附帶安裝參數）：
 
 ```bash
+# 前置：最小化系統可能沒有 curl（一行式安裝需要它）
+sudo apt-get update && sudo apt-get install -y curl
 curl -fsSL https://raw.githubusercontent.com/jasoncheng7115/jt-ipam/main/scripts/bootstrap.sh \
   | sudo bash -s -- --tls-mode nginx --public-fqdn ipam.example.com
 ```

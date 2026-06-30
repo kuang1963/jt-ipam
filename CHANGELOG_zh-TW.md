@@ -4,6 +4,15 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.52] — 2026-06-30
+
+### 變更
+- **掃描代理 installer 改為先裝 base tools（`curl git sudo`），並預設安裝 `avahi-utils`（mDNS）** —— mDNS 名稱解析
+  開箱即用（原本要 `JT_IPAM_ENABLE_MDNS` 才裝）。`avahi-utils` 會帶起 `avahi-daemon`（UDP 5353）；`JT_IPAM_NO_MDNS=1`
+  可不裝 mdns、`JT_IPAM_SKIP_PROBE_TOOLS=1` 略過所有探測工具。
+- **文件：安裝說明改為先裝 `curl`**（最小化系統可能沒有，一行式安裝需要它）。
+
+
 ## [0.5.51] — 2026-06-30
 
 ### 變更

@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.52] — 2026-06-30
+
+### Changed
+- **Scan-agent installer now installs base tools (`curl git sudo`) and, by default, `avahi-utils` for mDNS** —
+  mDNS name resolution works out of the box (previously opt-in via `JT_IPAM_ENABLE_MDNS`). `avahi-utils` brings
+  up `avahi-daemon` (UDP 5353); set `JT_IPAM_NO_MDNS=1` to skip it, `JT_IPAM_SKIP_PROBE_TOOLS=1` to skip all probe tools.
+- **Docs: install instructions now install `curl` first** (a minimal system may not ship it, and the one-liner needs it).
+
+
 ## [0.5.51] — 2026-06-30
 
 ### Changed
