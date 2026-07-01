@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.66] — 2026-07-01
+
+### Changed
+- **BMC console blank-screen hint now explains the two-layer serial-console requirement** — BIOS Console Redirection (POST/BIOS/boot menu) **and** an OS serial console (kernel `console=ttySx,115200n8` + `serial-getty`; ttyS from ACPI SPCR; PVE uses `/etc/kernel/cmdline` + `proxmox-boot-tool refresh`). Without the OS layer, SOL goes blank once the kernel loads.
+- test: `test_map_provider` accepts the `builtin` default map provider.
+
+
 ## [0.5.65] — 2026-07-01
 
 ### Fixed

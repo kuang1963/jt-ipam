@@ -4,6 +4,13 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.66] — 2026-07-01
+
+### 變更
+- **BMC 主控台空白畫面提示改為說明「兩層」序列主控台需求** —— BIOS Console Redirection（POST/BIOS/開機選單）**加上** OS 序列主控台（核心 `console=ttySx,115200n8` + `serial-getty`；ttyS 由 ACPI SPCR 判定；PVE 走 `/etc/kernel/cmdline` + `proxmox-boot-tool refresh`）。沒設 OS 層，核心載入後 SOL 就空白。
+- 測試：`test_map_provider` 接受預設 `builtin` 地圖來源。
+
+
 ## [0.5.65] — 2026-07-01
 
 ### 修正
