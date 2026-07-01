@@ -4,6 +4,13 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.65] — 2026-07-01
+
+### 修正
+- BMC 主控台終端機：加上明顯陰影，與 RDP/VNC 主控台畫面一致。
+- **整合 DNS（Univention UCS）：儲存時帳號改為必填。** 空帳號會讓 UCS 回 `400「basic auth malformed」`，同步靜默抓 0 筆。
+
+
 ## [0.5.64] — 2026-07-01
 
 ### 修正

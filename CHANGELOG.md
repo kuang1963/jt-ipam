@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.65] — 2026-07-01
+
+### Fixed
+- BMC console terminal: prominent drop-shadow to match the RDP/VNC console screen.
+- **DNS (Univention UCS): username is now required on save.** An empty username produced a UCS `400 "basic auth malformed"` and the sync silently pulled 0 records.
+
+
 ## [0.5.64] — 2026-07-01
 
 ### Fixed

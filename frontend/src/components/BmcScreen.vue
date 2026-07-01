@@ -223,8 +223,8 @@ onBeforeUnmount(teardown);
 .bmc-status[data-state="error"] { color: #d03050; background: rgba(208,48,80,.14); }
 .bmc-status[data-state="closed"] { color: #888; background: rgba(128,128,128,.14); }
 @keyframes bmc-pulse { 0% { box-shadow: 0 0 0 0 rgba(24,160,88,.5); } 70% { box-shadow: 0 0 0 6px rgba(24,160,88,0); } 100% { box-shadow: 0 0 0 0 rgba(24,160,88,0); } }
-.bmc-term { height: 420px; background: #1e1e1e; padding: 8px; border-radius: 8px;
-  border: 1px solid #2b2b30; box-shadow: 0 1px 3px rgba(0,0,0,.18); overflow: hidden; }
+.bmc-term { height: 420px; background: #1e1e1e; padding: 8px; border-radius: 10px;
+  border: 1px solid #2b2b30; box-shadow: 0 10px 30px rgba(0,0,0,.30), 0 3px 10px rgba(0,0,0,.20); overflow: hidden; }
 .bmc-term.bmc-full { flex: 1; height: auto; min-height: 0; }
 /* 卡片標題 icon+文字垂直置中（覆蓋主題預設，避免內容偏上） */
 :deep(.n-card > .n-card-header) { display: flex; align-items: center; padding-top: 12px; padding-bottom: 12px; }

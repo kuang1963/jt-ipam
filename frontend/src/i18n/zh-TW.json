@@ -1445,7 +1445,8 @@
     "help_unbound_opnsense": "走 OPNsense Unbound REST：需在 OPNsense 建 API key/secret 並給 Unbound 權限。",
     "help_windows_dns": "透過 WinRM 連到 Windows DNS 主機；帳號需 DNS 管理權，建議走 HTTPS (5986)。",
     "help_ucs": "直接呼叫 Univention UCS 的 UDM REST API（/univention/udm/…），不連 UCS 內的 BIND9。API URL 填 https://<ucs主機>；帳號用具 DNS 寫權者（如 Administrator）；自簽憑證可關閉「驗證 TLS 憑證」。",
-    "edit": "編輯 DNS 服務"
+    "edit": "編輯 DNS 服務",
+    "error_username_required": "帳號必填（此 DNS 類型以帳密認證）"
   },
   "scope_overlap": {
     "warning": "偵測到有重疊網段（同一個 IP 存在於多個子網路）。此整合未設定「限定子網路範圍」，同步時可能把存活狀態／DHCP／MAC 標到錯誤單位的同 IP。建議在下方指定關聯子網路範圍。"
