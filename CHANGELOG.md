@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.92] — 2026-07-03
+
+### Fixed
+- **Remote consoles no longer drop on idle / when the tab is backgrounded** — SSH/RDP/VNC consoles closed after ~60s of inactivity because liveness relied on a JS-timer heartbeat, which browsers throttle in background tabs. They now stay connected as long as the WebSocket is alive (kept alive by the transport-layer ping/pong, which works even in background tabs); the session ends only on a real disconnect or when you disconnect.
+- **Reconnect reuses saved credentials** — after connecting with "remember credentials" then disconnecting, Reconnect in the same tab re-prompted for username/password (only a full page reload picked up the saved credential). The console now records the just-saved credential locally so Reconnect reuses it. Applies to SSH/RDP/VNC/PVE consoles.
+
+
 ## [0.5.91] — 2026-07-03
 
 ### Security
