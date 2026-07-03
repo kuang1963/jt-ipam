@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.89] — 2026-07-03
+
+### Added
+- **Connections table — MAC and MAC vendor columns** — both off by default, available in the column picker; the vendor is resolved from the IEEE OUI table.
+
+### Fixed
+- **Liveness tooltip timestamps now show local time** — the IP status-dot tooltip rendered scanner / LibreNMS / DNS last-seen times in UTC; they now follow the browser's local timezone, like the rest of the app.
+
+
 ## [0.5.88] — 2026-07-03
 
 ### Added

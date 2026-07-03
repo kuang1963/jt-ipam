@@ -164,10 +164,12 @@ async def list_connection_targets(
         )).all()
         dev_names = {d[0]: d[1] for d in drows}
 
+    from app.services.oui import vendor_for_mac
     from app.services.os_precedence import effective_os
     out: list[IPAddressRead] = []
     for ip, ssh_ok, rdp_ok, vnc_ok, bmc_ok in kept:
         r = IPAddressRead.model_validate(ip)
+        r.mac_vendor = await vendor_for_mac(session, ip.mac)
         r.ssh_available = ssh_ok
         r.rdp_available = rdp_ok
         r.vnc_available = vnc_ok

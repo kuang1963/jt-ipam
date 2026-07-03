@@ -4,6 +4,15 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.89] — 2026-07-03
+
+### 新增
+- **連線管理 —— MAC 與 MAC 製造商欄** —— 兩欄預設不顯示,可在欄位選擇開啟;製造商由 IEEE OUI 表查出。
+
+### 修正
+- **上線狀態彈出時間改本地時區** —— IP 狀態燈彈出的 scanner／LibreNMS／DNS 最後上線時間原本顯示 UTC,現在跟隨瀏覽器本地時區（與全站一致）。
+
+
 ## [0.5.88] — 2026-07-03
 
 ### 新增
