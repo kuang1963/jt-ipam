@@ -4,6 +4,12 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.91] — 2026-07-03
+
+### 安全
+- **Graylog DSV 公開存取權杖改常數時間比對** —— token 守門的查詢端點（`/api/v1/lookup/...`,也可經明文 :8088 抓取）原本用一般 `!=` 比對 token,屬 timing side-channel。改用 `hmac.compare_digest`,並以 `surrogatepass` 編碼,讓惡意（非 UTF-8）token 安全被拒而非丟 500。內部資安檢視發現並修正。
+
+
 ## [0.5.90] — 2026-07-03
 
 ### 修正
