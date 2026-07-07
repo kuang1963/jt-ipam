@@ -152,13 +152,21 @@ function aggregateCounts(summary: any): { ins: number; upd: number; err: number;
     return out;
   }
 
-  // 3) 通用 top-level：librenms / wazuh / adguard 等
-  for (const [k, v] of Object.entries(summary)) {
-    if (typeof v !== "number") continue;
-    if (k.endsWith("_inserted") || k === "inserted") out.ins += v;
-    else if (k.endsWith("_updated") || k === "updated" || k.endsWith("_matched") || k.endsWith("_filled")) out.upd += v;
+  // 3) 通用：top-level 數字，或「一層巢狀分組」
+  //    （librenms：{devices:{seen,inserted,updated}, arp:{...}, fdb:{...}, vlans:{seen,upserted,mappings}}）
+  const bump = (k: string, v: number) => {
+    if (k.endsWith("_inserted") || k === "inserted" || k === "upserted") out.ins += v;
+    else if (k.endsWith("_updated") || k === "updated" || k.endsWith("_matched") || k.endsWith("_filled") || k === "mappings") out.upd += v;
     else if (k.endsWith("_errored") || k === "errored" || k.endsWith("_failed") || k === "missing_agents") out.err += v;
-    else if (k.endsWith("_seen") || k.endsWith("_count")) out.total += v;
+    else if (k.endsWith("_seen") || k === "seen" || k.endsWith("_count")) out.total += v;
+  };
+  for (const [k, v] of Object.entries(summary)) {
+    if (typeof v === "number") bump(k, v);
+    else if (v && typeof v === "object" && !Array.isArray(v)) {
+      for (const [k2, v2] of Object.entries(v as Record<string, unknown>)) {
+        if (typeof v2 === "number") bump(k2, v2);
+      }
+    }
   }
   return out;
 }
@@ -206,12 +214,16 @@ function formatSummary(kind: string, summary: any): string {
   const k = (key: string, label: string) => {
     if (typeof summary[key] === "number" && summary[key] !== 0) lines.push(`${label} ${summary[key]}`);
   };
-  k("devices_seen", t("tasks.summary.devices_seen"));
-  k("devices_inserted", t("tasks.summary.devices_inserted"));
-  k("devices_updated", t("tasks.summary.devices_updated"));
-  k("arp_seen", "ARP");
-  k("arp_inserted", t("tasks.summary.arp_inserted"));
-  k("fdb_seen", "FDB");
+  // 巢狀 summary：devices/arp/fdb/vlans 各是 {seen, inserted, updated}
+  const kn = (val: unknown, label: string) => {
+    if (typeof val === "number" && val !== 0) lines.push(`${label} ${val}`);
+  };
+  kn(summary.devices?.seen, t("tasks.summary.devices_seen"));
+  kn(summary.devices?.inserted, t("tasks.summary.devices_inserted"));
+  kn(summary.devices?.updated, t("tasks.summary.devices_updated"));
+  kn(summary.arp?.seen, "ARP");
+  kn(summary.arp?.inserted, t("tasks.summary.arp_inserted"));
+  kn(summary.fdb?.seen, "FDB");
   k("ip_mac_filled", t("tasks.summary.ip_mac_filled"));
 
   // 4) AdGuard 風格：{clients_result: {clients, ips_seen, ips_matched}, ...}

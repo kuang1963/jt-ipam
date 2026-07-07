@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.94] — 2026-07-07
+
+### Fixed
+- **Tasks table showed "added 0 / updated 0 / total 0" for LibreNMS syncs** — the LibreNMS sync summary is nested (`{devices:{...}, arp:{...}, fdb:{...}, vlans:{...}}`), but the Tasks table's count aggregation (and detail popover) only read flat top-level numbers, so it displayed all zeros even when devices / ARP / FDB were actually synced. It now recurses into the nested groups so the counts reflect the real work — making it clear the integration is connected and working.
+
+
 ## [0.5.93] — 2026-07-06
 
 ### Fixed

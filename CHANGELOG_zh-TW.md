@@ -4,6 +4,12 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.94] — 2026-07-07
+
+### 修正
+- **作業表格對 LibreNMS 同步顯示「新增 0／更新 0／總數 0」** —— LibreNMS 同步的 summary 是巢狀結構（`{devices:{...}, arp:{...}, fdb:{...}, vlans:{...}}`），但作業表格的計數彙總（與明細彈窗）只讀最上層的純數字，因此即使裝置／ARP／FDB 都有同步，仍顯示全 0。改成會遞迴進巢狀分組，新增／更新／總數正確反映實際同步量 —— 也讓「整合其實有連上、有在運作」一目了然。
+
+
 ## [0.5.93] — 2026-07-06
 
 ### 修正
