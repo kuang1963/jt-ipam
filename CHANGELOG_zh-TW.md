@@ -4,6 +4,16 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.98] — 2026-07-09
+
+### 修正
+- **phpIPAM 遷移／SSH 通道 —— 相容老舊主機 + 更清楚的認證錯誤** —— 通道現在也提供 `ssh-rsa`（SHA-1）用戶端簽章,讓對端非常舊的 sshd 也接受合法的 RSA 金鑰（否則 asyncssh 只送 rsa-sha2）。「認證被拒」訊息改為明列要檢查項目（authorized_keys、PermitRootLogin、金鑰權限、私鑰與公鑰是否成對）。
+- **`device_ports.name` 由 64 放寬到 255** —— 真實長介面名稱（例:Windows NDIS 過濾介面描述 71 字）會撐爆 VARCHAR(64),讓 LibreNMS/Proxmox 連接埠同步 StringDataRightTruncation 中斷。同步端也加防禦性截斷（migration 0096）。
+
+### 變更
+- 遷移頁一個遮蔽 i18n `t` 的區域變數改名。
+
+
 ## [0.5.97] — 2026-07-07
 
 ### 修正

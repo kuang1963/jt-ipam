@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.98] — 2026-07-09
+
+### Fixed
+- **phpIPAM migration / SSH tunnel — support old hosts + clearer auth errors** — the tunnel now also offers the `ssh-rsa` (SHA-1) client signature, so a valid RSA key on a very old phpIPAM sshd is accepted (asyncssh otherwise sends only rsa-sha2). The permission-denied message now lists exactly what to check (authorized_keys, PermitRootLogin, key perms, key/pubkey pairing).
+- **`device_ports.name` widened 64 → 255** — long real interface names (e.g. a Windows NDIS filter adapter description, 71 chars) overflowed VARCHAR(64) and aborted LibreNMS/Proxmox port sync with StringDataRightTruncation. Names are also truncated defensively at the sync sites (migration 0096).
+
+### Changed
+- Renamed a local variable in the migration view that shadowed the i18n `t`.
+
+
 ## [0.5.97] — 2026-07-07
 
 ### Fixed
