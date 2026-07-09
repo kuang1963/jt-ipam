@@ -4,6 +4,12 @@
 [Keep a Changelog](https://keepachangelog.com/)；版本對應
 `frontend/package.json` / `backend/app/version.py`。
 
+## [0.5.99] — 2026-07-09
+
+### 修正
+- **部分說明文字在正式版顯示空白** —— vue-i18n 把 `@`（連結訊息）、`{`/`}`（內插）、`|`（複數）當特殊語法,而有幾段訊息含字面的 `@`（`root@phpipam-host`、`帳號@IP`、`@BotFather`）、`{...}`（JSON 範例）或 `|`（shell pipe）。開發模式只是警告,但正式 build 會丟編譯錯誤、把周邊畫面一起弄空白 —— 最明顯是 phpIPAM 遷移的「操作流程」教學,還有 SSH/RDP/VNC 憑證名稱提示、Telegram／通用 Webhook 通知說明。已把這些字面字元轉義,恢復正常顯示。
+
+
 ## [0.5.98] — 2026-07-09
 
 ### 修正

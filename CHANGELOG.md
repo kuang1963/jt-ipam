@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format is loosely
 based on [Keep a Changelog](https://keepachangelog.com/); versions track
 `frontend/package.json` / `backend/app/version.py`.
 
+## [0.5.99] — 2026-07-09
+
+### Fixed
+- **Some help texts rendered blank in the production build** — vue-i18n treats `@` (linked messages), `{`/`}` (interpolation) and `|` (plural) as special syntax, and several messages contained a literal `@` (`root@phpipam-host`, `account@IP`, `@BotFather`), `{...}` (JSON examples) or `|` (a shell pipe). In dev these only logged a warning, but the production build threw a compile error that blanked the surrounding render — most visibly the phpIPAM migration "Steps" guide, plus the SSH/RDP/VNC credential-name placeholder and the Telegram / generic-webhook notification hints. Those literals are now escaped so they render correctly.
+
+
 ## [0.5.98] — 2026-07-09
 
 ### Fixed
